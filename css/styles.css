@@ -9,9 +9,17 @@ body {
 }
 
 /* Hero Section (Now Background Only) */
+/* Hero Section (Fix Background Cropping) */
 .hero {
-    background: url("../images/hero-background.jpg") center/cover no-repeat;
-    height: 300px; /* Keeps the banner */
+    background: url("../images/hero-background.jpg") center/contain no-repeat; 
+    height: auto; /* Allow it to adjust dynamically */
+    min-height: 300px; /* Ensures it's not too small */
+    width: 100%; /* Makes sure it covers full width */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 0; /* Adjust spacing */
+}
 }
 
 /* About Section */

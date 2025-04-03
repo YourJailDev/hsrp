@@ -11,31 +11,19 @@ body {
 /* Hero Section */
 .hero {
     background: url("../images/hero-background.jpg") center/cover no-repeat;
-    padding: 100px 20px;
+    height: 300px; /* Adjust height to keep the banner */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .hero .logo {
     width: 100px;
 }
 
-.hero h1 {
-    font-size: 3em;
-    font-weight: bold;
-}
-
-.hero span {
-    color: yellow;
-}
-
-.join-btn {
-    display: inline-block;
-    padding: 10px 20px;
-    color: white;
-    background-color: green;
-    text-decoration: none;
-    border-radius: 5px;
-    font-size: 1.2em;
-    margin-top: 20px;
+/* About Section */
+.about {
+    padding: 50px 20px;
 }
 
 /* Features Section */
@@ -71,4 +59,16 @@ body {
 .gallery img {
     width: 45%;
     border-radius: 8px;
+}
+
+/* Join Button */
+.join-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    color: white;
+    background-color: green;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 1.2em;
+    margin-top: 20px;
 }

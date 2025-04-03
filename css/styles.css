@@ -8,17 +8,10 @@ body {
     padding: 0;
 }
 
-/* Hero Section */
+/* Hero Section (Now Background Only) */
 .hero {
     background: url("../images/hero-background.jpg") center/cover no-repeat;
-    height: 300px; /* Adjust height to keep the banner */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.hero .logo {
-    width: 100px;
+    height: 300px; /* Keeps the banner */
 }
 
 /* About Section */

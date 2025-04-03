@@ -1,75 +1,142 @@
 /* General Styles */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #0f1a24;
+    font-family: 'Arial', sans-serif;
+    background-color: #0d1b2a; /* Dark background for a sleek look */
     color: white;
-    text-align: center;
     margin: 0;
     padding: 0;
 }
 
-/* Hero Section (Now Background Only) */
-/* Hero Section (Fix Background Cropping) */
-.hero {
-    background: url("../images/hero-background.jpg") center/contain no-repeat; 
-    height: auto; /* Allow it to adjust dynamically */
-    min-height: 300px; /* Ensures it's not too small */
-    width: 100%; /* Makes sure it covers full width */
+/* Header */
+header {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    padding: 20px 0; /* Adjust spacing */
-}
+    padding: 15px 5%;
+    background-color: rgba(0, 0, 0, 0.8);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
 }
 
-/* About Section */
+/* Logo */
+.logo img {
+    height: 60px;
+}
+
+/* Hero Section */
+.hero {
+    background: url("../images/hero-background.jpg") center/cover no-repeat;
+    height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 50px 10%;
+}
+
+/* Superate About Section */
 .about {
-    padding: 50px 20px;
+    background: rgba(15, 26, 36, 0.9); /* Dark semi-transparent overlay */
+    color: white;
+    text-align: center;
+    padding: 80px 20px; /* More padding for a grand look */
+    max-width: 80%;
+    margin: auto;
+    border-radius: 10px; /* Smooth edges */
+    box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.1); /* Soft glow effect */
 }
 
-/* Features Section */
-.features {
-    padding: 50px 20px;
-    background-color: #1a2b3c;
+/* About Title */
+.about h2 {
+    font-size: 2.5em; /* Bigger and bolder */
+    font-weight: bold;
+    margin-bottom: 20px;
 }
 
-.feature-grid {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
+/* About Description */
+.about p {
+    font-size: 1.2em;
+    line-height: 1.6;
+    opacity: 0.9;
 }
 
-.feature {
-    width: 30%;
-    padding: 20px;
-    background: #223344;
-    border-radius: 8px;
-}
-
-/* Gallery Section */
-.gallery {
-    padding: 50px 20px;
-}
-
-.gallery-grid {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-}
-
-.gallery img {
-    width: 45%;
-    border-radius: 8px;
-}
-
-/* Join Button */
+/* Join Now Button */
 .join-btn {
     display: inline-block;
-    padding: 10px 20px;
+    padding: 15px 30px;
     color: white;
-    background-color: green;
+    background: linear-gradient(90deg, #27ae60, #2ecc71);
     text-decoration: none;
-    border-radius: 5px;
-    font-size: 1.2em;
-    margin-top: 20px;
+    border-radius: 8px;
+    font-size: 1.4em;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.join-btn:hover {
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+    transform: scale(1.05);
+}
+
+/* Community Section */
+.community {
+    text-align: center;
+    padding: 60px 10%;
+}
+
+/* Community Cards */
+.community-cards {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.community-card {
+    background: #1a2b3c;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+    box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1);
+}
+
+/* Community Title */
+.community h2 {
+    font-size: 2em;
+    margin-bottom: 20px;
+}
+
+/* Community Text */
+.community p {
+    font-size: 1.1em;
+}
+
+/* Roleplay Images Section */
+.roleplay-images {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 40px 10%;
+}
+
+.roleplay-images img {
+    width: 45%;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s;
+}
+
+.roleplay-images img:hover {
+    transform: scale(1.05);
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #1a2b3c;
+    color: white;
+    margin-top: 40px;
 }

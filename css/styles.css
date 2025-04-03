@@ -32,37 +32,6 @@ body {
     position: relative;
     z-index: 2;
 }
-
-.hawaii-title {
-    font-size: 180px;
-    font-weight: bold;
-    margin: 0;
-    line-height: 0.9;
-    font-family: Impact, sans-serif;
-    text-transform: uppercase;
-    color: white;
-}
-
-.state-text {
-    font-size: 80px;
-    font-family: "Brush Script MT", cursive;
-    color: #fde74c;
-    position: absolute;
-    top: 0;
-    left: 20%;
-    transform: rotate(-10deg);
-    margin: 0;
-}
-
-.roleplay-text {
-    font-size: 80px;
-    color: #fde74c;
-    margin: -20px 0 0 0;
-    text-align: right;
-    padding-right: 20%;
-    font-weight: bold;
-}
-
 .about {
     text-align: center;
     padding: 50px 20%;
@@ -183,17 +152,5 @@ body {
     
     .image-box {
         margin: 10px 0;
-    }
-    
-    .hawaii-title {
-        font-size: 80px;
-    }
-    
-    .state-text {
-        font-size: 40px;
-    }
-    
-    .roleplay-text {
-        font-size: 40px;
     }
 }

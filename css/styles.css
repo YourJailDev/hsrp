@@ -14,6 +14,10 @@ body {
     padding: 100px 20px;
 }
 
+.hero .logo {
+    width: 100px;
+}
+
 .hero h1 {
     font-size: 3em;
     font-weight: bold;
@@ -21,11 +25,6 @@ body {
 
 .hero span {
     color: yellow;
-}
-
-.hero p {
-    font-size: 1.2em;
-    margin: 10px 0;
 }
 
 .join-btn {
@@ -39,11 +38,6 @@ body {
     margin-top: 20px;
 }
 
-/* About Section */
-.about {
-    padding: 50px 20px;
-}
-
 /* Features Section */
 .features {
     padding: 50px 20px;
@@ -52,15 +46,14 @@ body {
 
 .feature-grid {
     display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
 }
 
 .feature {
     width: 30%;
     padding: 20px;
     background: #223344;
-    margin: 10px;
     border-radius: 8px;
 }
 

@@ -38,10 +38,10 @@ header {
 
 /* Superate About Section */
 .about {
-    background: rgba(15, 26, 36, 0.9); /* Dark semi-transparent overlay */
+    background: #112240; /* Deep blue for a premium look */
     color: white;
     text-align: center;
-    padding: 80px 20px; /* More padding for a grand look */
+    padding: 80px 20px; /* Extra padding for a grand look */
     max-width: 80%;
     margin: auto;
     border-radius: 10px; /* Smooth edges */
@@ -67,7 +67,7 @@ header {
     display: inline-block;
     padding: 15px 30px;
     color: white;
-    background: linear-gradient(90deg, #27ae60, #2ecc71);
+    background: #007bff; /* Bright blue button */
     text-decoration: none;
     border-radius: 8px;
     font-size: 1.4em;
@@ -76,7 +76,7 @@ header {
 }
 
 .join-btn:hover {
-    background: linear-gradient(90deg, #2ecc71, #27ae60);
+    background: #0056b3; /* Darker blue on hover */
     transform: scale(1.05);
 }
 

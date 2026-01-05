@@ -1,16 +1,8 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { getAuthenticatedUser } from "../lib/auth";
 import Sidebar from "../components/Sidebar";
 
 export default async function StaffHandbook() {
-  const cookieStore = await cookies();
-  const userCookie = cookieStore.get("discord_user");
-
-  if (!userCookie) {
-    redirect("/");
-  }
-
-  const user = JSON.parse(userCookie.value);
+  const user = await getAuthenticatedUser("/staff-handbook");
 
   // Google Doc URL - use the regular view URL (not embed)
   const googleDocUrl = "https://docs.google.com/document/d/1nUHUWfbvCmvV_ToqjJ5V8UbDu0MqUdOnYJvU0ESE2uQ/preview";

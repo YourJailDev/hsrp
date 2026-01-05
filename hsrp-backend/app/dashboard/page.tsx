@@ -1,16 +1,8 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { getAuthenticatedUser } from "../lib/auth";
 import Sidebar from "../components/Sidebar";
 
 export default async function Dashboard() {
-  const cookieStore = await cookies();
-  const userCookie = cookieStore.get("discord_user");
-
-  if (!userCookie) {
-    redirect("/");
-  }
-
-  const user = JSON.parse(userCookie.value);
+  const user = await getAuthenticatedUser("/dashboard");
 
   return (
     <div className="flex min-h-screen bg-black">

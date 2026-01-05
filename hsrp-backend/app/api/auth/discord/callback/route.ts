@@ -1,4 +1,5 @@
-const googleDocEmbedUrl = "https://docs.google.com/document/d/YOUR_ACTUAL_DOC_ID/pub?embedded=true";import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { GUILD_ID, getAdminLevelFromRoles, AdminLevel } from "@/app/config/roles";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -51,18 +52,43 @@ export async function GET(request: NextRequest) {
 
     const userData = await userResponse.json();
 
-    // For now, redirect to dashboard with user ID
-    // In production, you'd want to create a session/JWT here
+    // Get guild member info to check roles
+    const guildMemberResponse = await fetch(
+      `https://discord.com/api/users/@me/guilds/${GUILD_ID}/member`,
+      {
+        headers: {
+          Authorization: `Bearer ${tokenData.access_token}`,
+        },
+      }
+    );
+
+    let adminLevel = AdminLevel.NONE;
+    let roles: string[] = [];
+
+    if (guildMemberResponse.ok) {
+      const memberData = await guildMemberResponse.json();
+      roles = memberData.roles || [];
+      adminLevel = getAdminLevelFromRoles(roles);
+    }
+
+    // Check if user has at least Trainee Mod level
+    if (adminLevel < AdminLevel.TRAINEE_MOD) {
+      return NextResponse.redirect(new URL("/?error=no_permission", request.url));
+    }
+
+    // Redirect to dashboard with user data
     const response = NextResponse.redirect(new URL("/dashboard", request.url));
     
-    // Set a cookie with user data (in production, use proper session management)
+    // Set a cookie with user data including admin level
     response.cookies.set("discord_user", JSON.stringify({
       id: userData.id,
       username: userData.username,
       avatar: userData.avatar,
       discriminator: userData.discriminator,
+      adminLevel: adminLevel,
+      roles: roles,
     }), {
-      httpOnly: true,
+      httpOnly: false, // Need to read on client for sidebar
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7, // 1 week

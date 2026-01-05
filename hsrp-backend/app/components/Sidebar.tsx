@@ -12,7 +12,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ user }: SidebarProps) {
-  const userAdminLevel = user.adminLevel ?? AdminLevel.STAFF;
+  const userAdminLevel = user.adminLevel ?? AdminLevel.TRAINEE_MOD;
   
   // Filter nav items based on user's admin level
   const filteredNavItems = NAV_ITEMS.filter(item => userAdminLevel >= item.requiredLevel);

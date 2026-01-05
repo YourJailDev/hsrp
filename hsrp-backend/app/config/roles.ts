@@ -5,11 +5,11 @@ export const GUILD_ID = "YOUR_DISCORD_SERVER_ID"; // Replace with your Discord s
 export enum AdminLevel {
   NONE = 0,
   TRAINEE_MOD = 1,        // Trainee Mod - Staff Training only
-  MODERATOR = 2,          // Moderator - Dashboard, Handbook, LOA, Server Management
-  ADMINISTRATOR = 3,      // Administrator - Same as Moderator
-  INTERNAL_AFFAIRS = 4,   // Internal Affairs - Same as Moderator
-  MANAGEMENT = 5,         // Management - Full access
-  DIRECTION_BOARD = 6,    // Direction Board - Full access
+  MODERATOR = 1442014281833910443,          // Moderator - Dashboard, Handbook, LOA, Server Management
+  ADMINISTRATOR = 1442014929799352382,      // Administrator - Same as Moderator
+  INTERNAL_AFFAIRS = 1442015630093062154,   // Internal Affairs - Same as Moderator
+  MANAGEMENT = 1442016481331118240,         // Management - Full access
+  DIRECTION_BOARD = 1442007891430215914,    // Direction Board - Full access
 }
 
 // Map Discord role IDs to admin levels

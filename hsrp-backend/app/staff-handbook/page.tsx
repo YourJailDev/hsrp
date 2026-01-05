@@ -1,50 +1,16 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import Sidebar from "../components/Sidebar";
 
-interface User {
-  id: string;
-  username: string;
-  avatar: string | null;
-}
+export default async function StaffHandbook() {
+  const cookieStore = await cookies();
+  const userCookie = cookieStore.get("discord_user");
 
-export default function StaffHandbook() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-
-  useEffect(() => {
-    const cookies = document.cookie.split(";");
-    const userCookie = cookies.find((c) => c.trim().startsWith("discord_user="));
-
-    if (userCookie) {
-      try {
-        const userData = JSON.parse(
-          decodeURIComponent(userCookie.split("=")[1])
-        );
-        setUser(userData);
-      } catch {
-        router.push("/");
-      }
-    } else {
-      router.push("/");
-    }
-    setLoading(false);
-  }, [router]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white">Loading...</div>
-      </div>
-    );
+  if (!userCookie) {
+    redirect("/");
   }
 
-  if (!user) {
-    return null;
-  }
+  const user = JSON.parse(userCookie.value);
 
   // Google Doc URL - use the regular view URL (not embed)
   const googleDocUrl = "https://docs.google.com/document/d/1nUHUWfbvCmvV_ToqjJ5V8UbDu0MqUdOnYJvU0ESE2uQ/preview";

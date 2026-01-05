@@ -48,7 +48,7 @@ export default function StaffHandbook() {
 
   // Replace this with your actual Google Doc embed URL
   // To get the embed URL: Open Google Doc → File → Share → Publish to web → Embed
-  const googleDocEmbedUrl = "https://docs.google.com/document/d/1nUHUWfbvCmvV_ToqjJ5V8UbDu0MqUdOnYJvU0ESE2uQ/edit?tab=t.0";
+  const googleDocEmbedUrl = "https://docs.google.com/document/d/1nUHUWfbvCmvV_ToqjJ5V8UbDu0MqUdOnYJvU0ESE2uQ/pub?embedded=true";
 
   return (
     <div className="min-h-screen bg-black flex">

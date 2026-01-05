@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+const googleDocEmbedUrl = "https://docs.google.com/document/d/YOUR_ACTUAL_DOC_ID/pub?embedded=true";import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;

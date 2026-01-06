@@ -1,5 +1,5 @@
 // Discord Guild ID for HSRP
-export const GUILD_ID = "YOUR_DISCORD_SERVER_ID"; // Replace with your Discord server ID
+export const GUILD_ID = "1441821616186196191"; // Replace with your Discord server ID
 
 // Admin levels - higher number = more permissions
 export enum AdminLevel {

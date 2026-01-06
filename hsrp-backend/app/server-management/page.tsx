@@ -202,10 +202,10 @@ export default function ServerManagement() {
         {activeTab === "overview" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {/* Server Status Card */}
-            <div className="bg-[#1c1c1e] rounded-xl p-6">
+            <div className="bg-[#1a1a2e]/50 backdrop-blur-xl rounded-2xl p-6 border border-white/5">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2" />
                   </svg>
                 </div>
@@ -220,10 +220,10 @@ export default function ServerManagement() {
             </div>
 
             {/* Players Card */}
-            <div className="bg-[#1c1c1e] rounded-xl p-6">
+            <div className="bg-[#1a1a2e]/50 backdrop-blur-xl rounded-2xl p-6 border border-white/5">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                   </svg>
                 </div>
@@ -237,10 +237,10 @@ export default function ServerManagement() {
             </div>
 
             {/* Join Key Card */}
-            <div className="bg-[#1c1c1e] rounded-xl p-6">
+            <div className="bg-[#1a1a2e]/50 backdrop-blur-xl rounded-2xl p-6 border border-white/5">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                   </svg>
                 </div>
@@ -252,10 +252,10 @@ export default function ServerManagement() {
             </div>
 
             {/* Mod Calls Card */}
-            <div className="bg-[#1c1c1e] rounded-xl p-6">
+            <div className="bg-[#1a1a2e]/50 backdrop-blur-xl rounded-2xl p-6 border border-white/5">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
                 </div>
@@ -270,12 +270,12 @@ export default function ServerManagement() {
 
         {/* Players Tab */}
         {activeTab === "players" && (
-          <div className="bg-[#1c1c1e] rounded-xl overflow-hidden">
-            <div className="p-4 border-b border-gray-800 flex justify-between items-center">
+          <div className="bg-[#1a1a2e]/50 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/5">
+            <div className="p-4 border-b border-white/10 flex justify-between items-center">
               <h2 className="text-white font-semibold">Current Players ({players.length})</h2>
               <button
                 onClick={fetchData}
-                className="text-gray-400 hover:text-white text-sm flex items-center gap-2"
+                className="text-gray-400 hover:text-white text-sm flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -285,7 +285,7 @@ export default function ServerManagement() {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-[#2a2a2c]">
+                <thead className="bg-[#0a0a0f]/50">
                   <tr>
                     <th className="text-left text-gray-400 text-xs font-medium px-4 py-3">Player</th>
                     <th className="text-left text-gray-400 text-xs font-medium px-4 py-3">Team</th>
@@ -304,12 +304,12 @@ export default function ServerManagement() {
                     players.map((player, i) => {
                       const { name } = parsePlayer(player.Player);
                       return (
-                        <tr key={i} className="border-t border-gray-800 hover:bg-[#2a2a2c]">
+                        <tr key={i} className="border-t border-white/5 hover:bg-white/5 transition-colors">
                           <td className="px-4 py-3 text-white">{name}</td>
                           <td className="px-4 py-3 text-gray-400">{player.Team}</td>
                           <td className="px-4 py-3 text-gray-400">{player.Callsign || "-"}</td>
                           <td className="px-4 py-3">
-                            <span className={`px-2 py-1 rounded text-xs ${
+                            <span className={`px-2 py-1 rounded-lg text-xs ${
                               player.Permission === "Server Owner" ? "bg-yellow-500/20 text-yellow-400" :
                               player.Permission === "Server Administrator" ? "bg-red-500/20 text-red-400" :
                               player.Permission === "Server Moderator" ? "bg-blue-500/20 text-blue-400" :
@@ -330,17 +330,17 @@ export default function ServerManagement() {
 
         {/* Logs Tab */}
         {activeTab === "logs" && (
-          <div className="bg-[#1c1c1e] rounded-xl overflow-hidden">
-            <div className="p-4 border-b border-gray-800 flex justify-between items-center">
+          <div className="bg-[#1a1a2e]/50 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/5">
+            <div className="p-4 border-b border-white/10 flex justify-between items-center">
               <div className="flex gap-2">
                 {(["join", "kill", "command", "modcall"] as const).map((type) => (
                   <button
                     key={type}
                     onClick={() => setLogType(type)}
-                    className={`px-3 py-1 rounded text-sm ${
+                    className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
                       logType === type
-                        ? "bg-blue-600 text-white"
-                        : "bg-[#2a2a2c] text-gray-400 hover:text-white"
+                        ? "bg-blue-600/80 text-white"
+                        : "bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
                     }`}
                   >
                     {type === "join" ? "Join Logs" :
@@ -351,7 +351,7 @@ export default function ServerManagement() {
               </div>
               <button
                 onClick={fetchLogs}
-                className="text-gray-400 hover:text-white text-sm flex items-center gap-2"
+                className="text-gray-400 hover:text-white text-sm flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -361,14 +361,14 @@ export default function ServerManagement() {
             </div>
             <div className="max-h-[500px] overflow-y-auto">
               {logType === "join" && (
-                <div className="divide-y divide-gray-800">
+                <div className="divide-y divide-white/5">
                   {joinLogs.length === 0 ? (
                     <p className="text-gray-500 text-center py-8">No join logs</p>
                   ) : (
                     joinLogs.slice().reverse().map((log, i) => {
                       const { name } = parsePlayer(log.Player);
                       return (
-                        <div key={i} className="px-4 py-3 flex items-center gap-3">
+                        <div key={i} className="px-4 py-3 flex items-center gap-3 hover:bg-white/5 transition-colors">
                           <span className={`w-2 h-2 rounded-full ${log.Join ? "bg-green-500" : "bg-red-500"}`} />
                           <span className="text-white">{name}</span>
                           <span className="text-gray-500 text-sm">{log.Join ? "joined" : "left"}</span>
@@ -380,7 +380,7 @@ export default function ServerManagement() {
                 </div>
               )}
               {logType === "kill" && (
-                <div className="divide-y divide-gray-800">
+                <div className="divide-y divide-white/5">
                   {killLogs.length === 0 ? (
                     <p className="text-gray-500 text-center py-8">No kill logs</p>
                   ) : (
@@ -388,7 +388,7 @@ export default function ServerManagement() {
                       const killer = parsePlayer(log.Killer);
                       const killed = parsePlayer(log.Killed);
                       return (
-                        <div key={i} className="px-4 py-3 flex items-center gap-2">
+                        <div key={i} className="px-4 py-3 flex items-center gap-2 hover:bg-white/5 transition-colors">
                           <span className="text-red-400">{killer.name}</span>
                           <span className="text-gray-500">killed</span>
                           <span className="text-white">{killed.name}</span>
@@ -400,14 +400,14 @@ export default function ServerManagement() {
                 </div>
               )}
               {logType === "command" && (
-                <div className="divide-y divide-gray-800">
+                <div className="divide-y divide-white/5">
                   {commandLogs.length === 0 ? (
                     <p className="text-gray-500 text-center py-8">No command logs</p>
                   ) : (
                     commandLogs.slice().reverse().map((log, i) => {
                       const { name } = parsePlayer(log.Player);
                       return (
-                        <div key={i} className="px-4 py-3">
+                        <div key={i} className="px-4 py-3 hover:bg-white/5 transition-colors">
                           <div className="flex items-center gap-2">
                             <span className="text-blue-400">{name}</span>
                             <span className="text-gray-600 text-xs ml-auto">{formatTimestamp(log.Timestamp)}</span>
@@ -420,7 +420,7 @@ export default function ServerManagement() {
                 </div>
               )}
               {logType === "modcall" && (
-                <div className="divide-y divide-gray-800">
+                <div className="divide-y divide-white/5">
                   {modCalls.length === 0 ? (
                     <p className="text-gray-500 text-center py-8">No mod calls</p>
                   ) : (
@@ -428,7 +428,7 @@ export default function ServerManagement() {
                       const caller = parsePlayer(log.Caller);
                       const moderator = log.Moderator ? parsePlayer(log.Moderator) : null;
                       return (
-                        <div key={i} className="px-4 py-3 flex items-center gap-2">
+                        <div key={i} className="px-4 py-3 flex items-center gap-2 hover:bg-white/5 transition-colors">
                           <span className="text-yellow-400">{caller.name}</span>
                           <span className="text-gray-500">called for mod</span>
                           {moderator && (
@@ -439,7 +439,7 @@ export default function ServerManagement() {
                             </>
                           )}
                           {!moderator && (
-                            <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-xs">Pending</span>
+                            <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded-lg text-xs">Pending</span>
                           )}
                           <span className="text-gray-600 text-xs ml-auto">{formatTimestamp(log.Timestamp)}</span>
                         </div>
@@ -455,7 +455,7 @@ export default function ServerManagement() {
         {/* Commands Tab */}
         {activeTab === "commands" && (
           <div className="space-y-6">
-            <div className="bg-[#1c1c1e] rounded-xl p-6">
+            <div className="bg-[#1a1a2e]/50 backdrop-blur-xl rounded-2xl p-6 border border-white/5">
               <h2 className="text-white font-semibold mb-4">Execute Command</h2>
               <div className="flex gap-3">
                 <input
@@ -464,19 +464,19 @@ export default function ServerManagement() {
                   onChange={(e) => setCommandInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && executeCommand()}
                   placeholder="Enter command (e.g., :h Hello everyone!)"
-                  className="flex-1 bg-[#2a2a2c] text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 bg-[#0a0a0f]/50 text-white px-4 py-3 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
                 />
                 <button
                   onClick={executeCommand}
                   disabled={commandLoading || !commandInput.trim()}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {commandLoading ? "Executing..." : "Execute"}
                 </button>
               </div>
               {commandMessage && (
-                <div className={`mt-4 px-4 py-3 rounded-lg ${
-                  commandMessage.type === "success" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
+                <div className={`mt-4 px-4 py-3 rounded-xl ${
+                  commandMessage.type === "success" ? "bg-green-500/20 text-green-400 border border-green-500/30" : "bg-red-500/20 text-red-400 border border-red-500/30"
                 }`}>
                   {commandMessage.text}
                 </div>
@@ -484,7 +484,7 @@ export default function ServerManagement() {
             </div>
 
             {/* Quick Commands */}
-            <div className="bg-[#1c1c1e] rounded-xl p-6">
+            <div className="bg-[#1a1a2e]/50 backdrop-blur-xl rounded-2xl p-6 border border-white/5">
               <h2 className="text-white font-semibold mb-4">Quick Commands</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {[
@@ -500,7 +500,7 @@ export default function ServerManagement() {
                   <button
                     key={quick.label}
                     onClick={() => setCommandInput(quick.cmd)}
-                    className="px-4 py-3 bg-[#2a2a2c] text-gray-300 rounded-lg hover:bg-[#3a3a3c] hover:text-white text-sm text-left"
+                    className="px-4 py-3 bg-[#0a0a0f]/50 text-gray-300 rounded-xl hover:bg-white/10 hover:text-white text-sm text-left border border-white/5 transition-all"
                   >
                     {quick.label}
                     <span className="text-gray-600 text-xs block font-mono">{quick.cmd}</span>
@@ -513,12 +513,12 @@ export default function ServerManagement() {
 
         {/* Bans Tab */}
         {activeTab === "bans" && (
-          <div className="bg-[#1c1c1e] rounded-xl overflow-hidden">
-            <div className="p-4 border-b border-gray-800 flex justify-between items-center">
+          <div className="bg-[#1a1a2e]/50 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/5">
+            <div className="p-4 border-b border-white/10 flex justify-between items-center">
               <h2 className="text-white font-semibold">Banned Players ({Object.keys(bans).length})</h2>
               <button
                 onClick={fetchBans}
-                className="text-gray-400 hover:text-white text-sm flex items-center gap-2"
+                className="text-gray-400 hover:text-white text-sm flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -528,7 +528,7 @@ export default function ServerManagement() {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-[#2a2a2c]">
+                <thead className="bg-[#0a0a0f]/50">
                   <tr>
                     <th className="text-left text-gray-400 text-xs font-medium px-4 py-3">Player ID</th>
                     <th className="text-left text-gray-400 text-xs font-medium px-4 py-3">Username</th>
@@ -544,13 +544,13 @@ export default function ServerManagement() {
                     </tr>
                   ) : (
                     Object.entries(bans).map(([playerId, playerName]) => (
-                      <tr key={playerId} className="border-t border-gray-800 hover:bg-[#2a2a2c]">
+                      <tr key={playerId} className="border-t border-white/5 hover:bg-white/5 transition-colors">
                         <td className="px-4 py-3 text-gray-400 font-mono">{playerId}</td>
                         <td className="px-4 py-3 text-white">{playerName}</td>
                         <td className="px-4 py-3">
                           <button
                             onClick={() => setCommandInput(`:unban ${playerName}`)}
-                            className="px-3 py-1 bg-green-500/20 text-green-400 rounded text-sm hover:bg-green-500/30"
+                            className="px-3 py-1.5 bg-green-500/20 text-green-400 rounded-lg text-sm hover:bg-green-500/30 transition-colors"
                           >
                             Unban
                           </button>

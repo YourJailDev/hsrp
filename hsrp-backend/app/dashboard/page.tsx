@@ -1,5 +1,6 @@
 import { getAuthenticatedUser } from "../lib/auth";
 import Sidebar from "../components/Sidebar";
+import DashboardTrainingClaims from "../components/DashboardTrainingClaims";
 import Link from "next/link";
 
 export default async function Dashboard() {
@@ -132,33 +133,8 @@ export default async function Dashboard() {
               </div>
             </div>
 
-            {/* Training Progress */}
-            <div className="bg-[#1a1a2e]/80 backdrop-blur-sm rounded-2xl p-6">
-              <h2 className="text-white font-semibold text-lg mb-4">Training Progress 🌴</h2>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-xl bg-[#2a2a3e]/50">
-                  <div className="flex items-center gap-3">
-                    <span className="text-green-400">✓</span>
-                    <span className="text-white text-sm">Moderation Training</span>
-                  </div>
-                  <span className="px-3 py-1 rounded-lg bg-green-500/20 text-green-400 text-xs">Completed</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-xl bg-[#2a2a3e]/50">
-                  <div className="flex items-center gap-3">
-                    <span className="text-yellow-400">📋</span>
-                    <span className="text-white text-sm">Policy Test</span>
-                  </div>
-                  <span className="px-3 py-1 rounded-lg bg-yellow-500/20 text-yellow-400 text-xs">Pending</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-xl bg-[#2a2a3e]/50">
-                  <div className="flex items-center gap-3">
-                    <span className="text-gray-500">🔒</span>
-                    <span className="text-gray-400 text-sm">Supervisor Training</span>
-                  </div>
-                  <span className="px-3 py-1 rounded-lg bg-gray-500/20 text-gray-400 text-xs">Locked</span>
-                </div>
-              </div>
-            </div>
+            {/* Training Claims */}
+            <DashboardTrainingClaims />
           </div>
         </div>
       </main>

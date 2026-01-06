@@ -2,6 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
+import { 
+  getTrainingClaims, 
+  addTrainingClaim, 
+  updateTrainingClaimStatus, 
+  deleteTrainingClaim,
+  type TrainingClaim 
+} from "../lib/storage";
 
 interface User {
   id: string;
@@ -10,25 +17,8 @@ interface User {
   adminLevel?: number;
 }
 
-interface TrainingClaim {
-  id: string;
-  trainingType: string;
-  trainee: string;
-  trainer: string;
-  date: string;
-  status: "pending" | "approved" | "denied";
-  notes: string;
-  claimedAt: string;
-}
-
 const TRAINING_TYPES = [
   "Moderation Training",
-  "Administration Training",
-  "Policy Test",
-  "Supervisor Training",
-  "In-Game Training",
-  "Communication Training",
-  "Advanced Moderation",
 ];
 
 export default function TrainingClaims() {
@@ -57,6 +47,9 @@ export default function TrainingClaims() {
     } else {
       window.location.href = "/";
     }
+    
+    // Load claims from storage
+    setClaims(getTrainingClaims());
   }, []);
 
   const handleCreateClaim = () => {
@@ -73,17 +66,20 @@ export default function TrainingClaims() {
       claimedAt: new Date().toISOString(),
     };
 
-    setClaims([claim, ...claims]);
+    const updated = addTrainingClaim(claim);
+    setClaims(updated);
     setNewClaim({ trainingType: TRAINING_TYPES[0], trainee: "", date: "", notes: "" });
     setShowCreateModal(false);
   };
 
-  const updateClaimStatus = (id: string, status: "approved" | "denied") => {
-    setClaims(claims.map((c) => (c.id === id ? { ...c, status } : c)));
+  const handleUpdateStatus = (id: string, status: "approved" | "denied") => {
+    const updated = updateTrainingClaimStatus(id, status);
+    setClaims(updated);
   };
 
-  const deleteClaim = (id: string) => {
-    setClaims(claims.filter((c) => c.id !== id));
+  const handleDelete = (id: string) => {
+    const updated = deleteTrainingClaim(id);
+    setClaims(updated);
   };
 
   const getStatusColor = (status: string) => {
@@ -210,7 +206,7 @@ export default function TrainingClaims() {
                           {claim.status === "pending" && (
                             <>
                               <button
-                                onClick={() => updateClaimStatus(claim.id, "approved")}
+                                onClick={() => handleUpdateStatus(claim.id, "approved")}
                                 className="p-1.5 text-green-400 hover:bg-green-500/20 rounded-lg transition-colors"
                                 title="Approve"
                               >
@@ -219,7 +215,7 @@ export default function TrainingClaims() {
                                 </svg>
                               </button>
                               <button
-                                onClick={() => updateClaimStatus(claim.id, "denied")}
+                                onClick={() => handleUpdateStatus(claim.id, "denied")}
                                 className="p-1.5 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
                                 title="Deny"
                               >
@@ -230,7 +226,7 @@ export default function TrainingClaims() {
                             </>
                           )}
                           <button
-                            onClick={() => deleteClaim(claim.id)}
+                            onClick={() => handleDelete(claim.id)}
                             className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                             title="Delete"
                           >

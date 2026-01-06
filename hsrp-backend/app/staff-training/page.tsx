@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import Sidebar from "../components/Sidebar";
+import {
+  getTrainingSessions,
+  saveTrainingSessions,
+  type TrainingSession,
+  type ChatMessage,
+} from "../lib/storage";
 
 interface User {
   id: string;
@@ -10,43 +17,8 @@ interface User {
   adminLevel?: number;
 }
 
-interface ChatMessage {
-  id: string;
-  sender: string;
-  senderType: "trainee" | "trainer" | "system";
-  message: string;
-  timestamp: string;
-}
-
-interface TrainingSession {
-  id: string;
-  traineeId: string;
-  traineeName: string;
-  trainerId: string | null;
-  trainerName: string | null;
-  status: "waiting" | "active" | "completed";
-  messages: ChatMessage[];
-  createdAt: string;
-}
-
-const STORAGE_KEY = "hsrp_training_sessions";
-
-function getTrainingSessions(): TrainingSession[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveTrainingSessions(sessions: TrainingSession[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
-}
-
 export default function StaffTraining() {
+  const searchParams = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
   const [sessions, setSessions] = useState<TrainingSession[]>([]);
   const [activeSession, setActiveSession] = useState<TrainingSession | null>(null);
@@ -71,8 +43,19 @@ export default function StaffTraining() {
       window.location.href = "/";
     }
 
-    setSessions(getTrainingSessions());
-  }, []);
+    const loadedSessions = getTrainingSessions();
+    setSessions(loadedSessions);
+
+    // Check if we have a sessionId in URL params (from training claims)
+    const sessionId = searchParams.get("sessionId");
+    if (sessionId) {
+      const session = loadedSessions.find(s => s.id === sessionId);
+      if (session) {
+        setActiveSession(session);
+        setView("chat");
+      }
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // Auto-scroll to bottom of chat

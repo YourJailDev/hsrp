@@ -7,8 +7,11 @@ import {
   addTrainingClaim, 
   updateTrainingClaimStatus, 
   deleteTrainingClaim,
+  createSessionFromClaim,
+  getSessionByClaimId,
   type TrainingClaim 
 } from "../lib/storage";
+import { useRouter } from "next/navigation";
 
 interface User {
   id: string;
@@ -22,6 +25,7 @@ const TRAINING_TYPES = [
 ];
 
 export default function TrainingClaims() {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [claims, setClaims] = useState<TrainingClaim[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -80,6 +84,28 @@ export default function TrainingClaims() {
   const handleDelete = (id: string) => {
     const updated = deleteTrainingClaim(id);
     setClaims(updated);
+  };
+
+  const handleStartTraining = (claim: TrainingClaim) => {
+    if (!user) return;
+    
+    // Check if a session already exists for this claim
+    const existingSession = getSessionByClaimId(claim.id);
+    if (existingSession) {
+      // If session exists, redirect to it
+      router.push(`/staff-training?sessionId=${existingSession.id}`);
+      return;
+    }
+    
+    // Create a new training session from the claim
+    const session = createSessionFromClaim(claim, user.id, user.username);
+    
+    // Mark the claim as approved since training is starting
+    updateTrainingClaimStatus(claim.id, "approved");
+    setClaims(getTrainingClaims());
+    
+    // Redirect to staff training with the session ID
+    router.push(`/staff-training?sessionId=${session.id}`);
   };
 
   const getStatusColor = (status: string) => {
@@ -206,13 +232,15 @@ export default function TrainingClaims() {
                           {claim.status === "pending" && (
                             <>
                               <button
-                                onClick={() => handleUpdateStatus(claim.id, "approved")}
-                                className="p-1.5 text-green-400 hover:bg-green-500/20 rounded-lg transition-colors"
-                                title="Approve"
+                                onClick={() => handleStartTraining(claim)}
+                                className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex items-center gap-1"
+                                title="Start Training"
                               >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
+                                Start
                               </button>
                               <button
                                 onClick={() => handleUpdateStatus(claim.id, "denied")}
@@ -224,6 +252,18 @@ export default function TrainingClaims() {
                                 </svg>
                               </button>
                             </>
+                          )}
+                          {claim.status === "approved" && (
+                            <button
+                              onClick={() => handleStartTraining(claim)}
+                              className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center gap-1"
+                              title="Continue Training"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                              </svg>
+                              Chat
+                            </button>
                           )}
                           <button
                             onClick={() => handleDelete(claim.id)}

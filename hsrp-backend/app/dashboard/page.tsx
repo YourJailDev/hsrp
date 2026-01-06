@@ -107,35 +107,8 @@ export default async function Dashboard() {
             </div>
           </div>
 
-          {/* Bottom Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Staff Schedule */}
-            <div className="bg-[#1a1a2e]/80 backdrop-blur-sm rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-white font-semibold text-lg">Staff Schedule</h2>
-                <button className="text-sm text-white px-4 py-1.5 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600">
-                  Claim Host ▾
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-gray-400 text-sm mb-3">Upcoming Sessions</h3>
-                  <div className="space-y-2">
-                    <p className="text-gray-500 text-sm">No upcoming sessions</p>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-gray-400 text-sm mb-3">Recent Sessions</h3>
-                  <div className="space-y-2">
-                    <p className="text-gray-500 text-sm">No recent sessions</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Training Claims */}
-            <DashboardTrainingClaims />
-          </div>
+          {/* Training Claims */}
+          <DashboardTrainingClaims />
         </div>
       </main>
     </div>

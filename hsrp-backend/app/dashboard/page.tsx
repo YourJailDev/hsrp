@@ -12,7 +12,7 @@ export default async function Dashboard() {
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=80')`,
+            backgroundImage: `url('https://cdn.discordapp.com/attachments/1458015184143777802/1458015376259551344/image.png?ex=695e1a22&is=695cc8a2&hm=05888c0918d647b70cb54006fb2cf34ffe9f010ad1e43458860ba27e4576cb08')`,
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/60 via-[#0a0a0f]/40 to-[#0a0a0f]" />

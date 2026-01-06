@@ -5,22 +5,22 @@ export const GUILD_ID = "YOUR_DISCORD_SERVER_ID"; // Replace with your Discord s
 export enum AdminLevel {
   NONE = 0,
   TRAINEE_MOD = 1,        // Trainee Mod - Staff Training only
-  MODERATOR = 1442014281833910443,          // Moderator - Dashboard, Handbook, LOA, Server Management
-  ADMINISTRATOR = 1442014929799352382,      // Administrator - Same as Moderator
-  INTERNAL_AFFAIRS = 1442015630093062154,   // Internal Affairs - Same as Moderator
-  MANAGEMENT = 1442016481331118240,         // Management - Full access
-  DIRECTION_BOARD = 1442007891430215914,    // Direction Board - Full access
+  MODERATOR = 2,          // Moderator - Dashboard, Handbook, LOA, Server Management
+  ADMINISTRATOR = 3,      // Administrator - Same as Moderator
+  INTERNAL_AFFAIRS = 4,   // Internal Affairs - Same as Moderator
+  MANAGEMENT = 5,         // Management - Full access
+  DIRECTION_BOARD = 6,    // Direction Board - Full access
 }
 
 // Map Discord role IDs to admin levels
 // Replace these with your actual Discord role IDs
 export const ROLE_PERMISSIONS: Record<string, AdminLevel> = {
-  "ROLE_ID_FOR_DIRECTION_BOARD": AdminLevel.DIRECTION_BOARD,     // Direction Board role ID
-  "ROLE_ID_FOR_MANAGEMENT": AdminLevel.MANAGEMENT,               // Management role ID
-  "ROLE_ID_FOR_INTERNAL_AFFAIRS": AdminLevel.INTERNAL_AFFAIRS,   // Internal Affairs role ID
-  "ROLE_ID_FOR_ADMINISTRATOR": AdminLevel.ADMINISTRATOR,         // Administrator role ID
-  "ROLE_ID_FOR_MODERATOR": AdminLevel.MODERATOR,                 // Moderator role ID
-  "ROLE_ID_FOR_TRAINEE_MOD": AdminLevel.TRAINEE_MOD,             // Trainee Mod role ID
+  "1442007891430215914": AdminLevel.DIRECTION_BOARD,     // Direction Board role ID
+  "1442016481331118240": AdminLevel.MANAGEMENT,               // Management role ID
+  "1442015630093062154": AdminLevel.INTERNAL_AFFAIRS,   // Internal Affairs role ID
+  "1442014929799352382": AdminLevel.ADMINISTRATOR,         // Administrator role ID
+  "1442014281833910443": AdminLevel.MODERATOR,                 // Moderator role ID
+  "1442014338184380416": AdminLevel.TRAINEE_MOD,             // Trainee Mod role ID
 };
 
 // Define which pages require which admin level

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Sidebar from "../components/Sidebar";
 import { parsePlayer, formatTimestamp } from "../config/erlc";
+import { AdminLevel } from "../config/roles";
 import type { ServerStatus, Player, JoinLog, KillLog, CommandLog, ModCall } from "../config/erlc";
 
 interface User {
@@ -13,6 +14,52 @@ interface User {
 }
 
 type TabType = "overview" | "players" | "logs" | "commands" | "bans";
+
+// Commands organized by required rank
+interface QuickCommand {
+  label: string;
+  cmd: string;
+  requiredLevel: AdminLevel;
+  description?: string;
+}
+
+const QUICK_COMMANDS: QuickCommand[] = [
+  // Moderator/Administrator (Level 2+) - View commands
+  { label: "View", cmd: ":view ", requiredLevel: AdminLevel.MODERATOR, description: "View a player" },
+  { label: "Bans", cmd: ":bans", requiredLevel: AdminLevel.MODERATOR, description: "View bans" },
+  { label: "Cmds", cmd: ":cmds", requiredLevel: AdminLevel.MODERATOR, description: "View commands" },
+  { label: "Logs", cmd: ":logs", requiredLevel: AdminLevel.MODERATOR, description: "View logs" },
+  { label: "Admins", cmd: ":admins", requiredLevel: AdminLevel.MODERATOR, description: "List admins" },
+  { label: "Mods", cmd: ":mods", requiredLevel: AdminLevel.MODERATOR, description: "List mods" },
+  { label: "PM", cmd: ":pm ", requiredLevel: AdminLevel.MODERATOR, description: "Private message" },
+  
+  // Internal Affairs (Level 4+)
+  { label: "Kick", cmd: ":kick ", requiredLevel: AdminLevel.INTERNAL_AFFAIRS, description: "Kick player" },
+  { label: "Refresh", cmd: ":refresh ", requiredLevel: AdminLevel.INTERNAL_AFFAIRS, description: "Refresh player" },
+  { label: "Unjail", cmd: ":unjail ", requiredLevel: AdminLevel.INTERNAL_AFFAIRS, description: "Unjail player" },
+  { label: "Mod", cmd: ":mod ", requiredLevel: AdminLevel.INTERNAL_AFFAIRS, description: "Give mod" },
+  { label: "Unmod", cmd: ":unmod ", requiredLevel: AdminLevel.INTERNAL_AFFAIRS, description: "Remove mod" },
+  { label: "Admin", cmd: ":admin ", requiredLevel: AdminLevel.INTERNAL_AFFAIRS, description: "Give admin" },
+  { label: "Unadmin", cmd: ":unadmin ", requiredLevel: AdminLevel.INTERNAL_AFFAIRS, description: "Remove admin" },
+  
+  // Management (Level 5+)
+  { label: "Priority", cmd: ":pt ", requiredLevel: AdminLevel.MANAGEMENT, description: "Priority" },
+  { label: "Party", cmd: ":prty ", requiredLevel: AdminLevel.MANAGEMENT, description: "Party" },
+  { label: "Hint", cmd: ":h ", requiredLevel: AdminLevel.MANAGEMENT, description: "Hint message" },
+  { label: "Message", cmd: ":m ", requiredLevel: AdminLevel.MANAGEMENT, description: "Server message" },
+  { label: "Load", cmd: ":load ", requiredLevel: AdminLevel.MANAGEMENT, description: "Load command" },
+  
+  // Direction Board (Level 6+)
+  { label: "Bring", cmd: ":bring ", requiredLevel: AdminLevel.DIRECTION_BOARD, description: "Bring player" },
+  { label: "Heal", cmd: ":heal ", requiredLevel: AdminLevel.DIRECTION_BOARD, description: "Heal player" },
+  { label: "Wanted", cmd: ":wanted ", requiredLevel: AdminLevel.DIRECTION_BOARD, description: "Set wanted" },
+  { label: "Unwanted", cmd: ":unwanted ", requiredLevel: AdminLevel.DIRECTION_BOARD, description: "Remove wanted" },
+  { label: "To Car", cmd: ":tocar ", requiredLevel: AdminLevel.DIRECTION_BOARD, description: "Teleport to car" },
+  { label: "To ATV", cmd: ":toatv ", requiredLevel: AdminLevel.DIRECTION_BOARD, description: "Teleport to ATV" },
+  { label: "To", cmd: ":to ", requiredLevel: AdminLevel.DIRECTION_BOARD, description: "Teleport to player" },
+  { label: "Ban", cmd: ":ban ", requiredLevel: AdminLevel.DIRECTION_BOARD, description: "Ban player" },
+  { label: "Unban", cmd: ":unban ", requiredLevel: AdminLevel.DIRECTION_BOARD, description: "Unban player" },
+];
 
 export default function ServerManagement() {
   const [user, setUser] = useState<User | null>(null);
@@ -124,6 +171,18 @@ export default function ServerManagement() {
 
   const executeCommand = async () => {
     if (!commandInput.trim()) return;
+
+    // Check if user has permission for this command
+    const commandBase = commandInput.trim().split(" ")[0].toLowerCase();
+    const matchedCommand = QUICK_COMMANDS.find(cmd => 
+      cmd.cmd.trim().toLowerCase() === commandBase || 
+      cmd.cmd.trim().toLowerCase().startsWith(commandBase + " ")
+    );
+    
+    if (matchedCommand && (user?.adminLevel ?? 0) < matchedCommand.requiredLevel) {
+      setCommandMessage({ type: "error", text: "You don't have permission to use this command" });
+      return;
+    }
 
     setCommandLoading(true);
     setCommandMessage(null);
@@ -486,27 +545,58 @@ export default function ServerManagement() {
             {/* Quick Commands */}
             <div className="bg-[#1a1a2e]/50 backdrop-blur-xl rounded-2xl p-6 border border-white/5">
               <h2 className="text-white font-semibold mb-4">Quick Commands</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {[
-                  { label: "Hint Message", cmd: ":h " },
-                  { label: "Message", cmd: ":m " },
-                  { label: "PM", cmd: ":pm " },
-                  { label: "Kick", cmd: ":kick " },
-                  { label: "Ban", cmd: ":ban " },
-                  { label: "Unban", cmd: ":unban " },
-                  { label: "Refresh", cmd: ":refresh " },
-                  { label: "Mod Call", cmd: ":mod " },
-                ].map((quick) => (
-                  <button
-                    key={quick.label}
-                    onClick={() => setCommandInput(quick.cmd)}
-                    className="px-4 py-3 bg-[#0a0a0f]/50 text-gray-300 rounded-xl hover:bg-white/10 hover:text-white text-sm text-left border border-white/5 transition-all"
-                  >
-                    {quick.label}
-                    <span className="text-gray-600 text-xs block font-mono">{quick.cmd}</span>
-                  </button>
-                ))}
-              </div>
+              <p className="text-gray-500 text-sm mb-4">Commands available based on your rank</p>
+              
+              {/* Group commands by rank */}
+              {[
+                { level: AdminLevel.MODERATOR, title: "Moderator Commands", color: "blue" },
+                { level: AdminLevel.INTERNAL_AFFAIRS, title: "Internal Affairs Commands", color: "purple" },
+                { level: AdminLevel.MANAGEMENT, title: "Management Commands", color: "orange" },
+                { level: AdminLevel.DIRECTION_BOARD, title: "Direction Board Commands", color: "red" },
+              ].map((group) => {
+                const commands = QUICK_COMMANDS.filter(
+                  (cmd) => cmd.requiredLevel === group.level && (user?.adminLevel ?? 0) >= cmd.requiredLevel
+                );
+                
+                if (commands.length === 0) return null;
+                
+                return (
+                  <div key={group.level} className="mb-6 last:mb-0">
+                    <h3 className={`text-sm font-medium mb-3 ${
+                      group.color === "blue" ? "text-blue-400" :
+                      group.color === "purple" ? "text-purple-400" :
+                      group.color === "orange" ? "text-orange-400" :
+                      "text-red-400"
+                    }`}>
+                      {group.title}
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {commands.map((quick) => (
+                        <button
+                          key={quick.label}
+                          onClick={() => setCommandInput(quick.cmd)}
+                          className={`px-4 py-3 rounded-xl text-sm text-left border transition-all ${
+                            group.color === "blue" ? "bg-blue-500/10 text-blue-300 border-blue-500/20 hover:bg-blue-500/20" :
+                            group.color === "purple" ? "bg-purple-500/10 text-purple-300 border-purple-500/20 hover:bg-purple-500/20" :
+                            group.color === "orange" ? "bg-orange-500/10 text-orange-300 border-orange-500/20 hover:bg-orange-500/20" :
+                            "bg-red-500/10 text-red-300 border-red-500/20 hover:bg-red-500/20"
+                          }`}
+                        >
+                          {quick.label}
+                          <span className="text-gray-500 text-xs block font-mono">{quick.cmd}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {/* Show message if no commands available */}
+              {QUICK_COMMANDS.filter(cmd => (user?.adminLevel ?? 0) >= cmd.requiredLevel).length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No commands available for your rank</p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -548,12 +638,16 @@ export default function ServerManagement() {
                         <td className="px-4 py-3 text-gray-400 font-mono">{playerId}</td>
                         <td className="px-4 py-3 text-white">{playerName}</td>
                         <td className="px-4 py-3">
-                          <button
-                            onClick={() => setCommandInput(`:unban ${playerName}`)}
-                            className="px-3 py-1.5 bg-green-500/20 text-green-400 rounded-lg text-sm hover:bg-green-500/30 transition-colors"
-                          >
-                            Unban
-                          </button>
+                          {(user?.adminLevel ?? 0) >= AdminLevel.DIRECTION_BOARD ? (
+                            <button
+                              onClick={() => setCommandInput(`:unban ${playerName}`)}
+                              className="px-3 py-1.5 bg-green-500/20 text-green-400 rounded-lg text-sm hover:bg-green-500/30 transition-colors"
+                            >
+                              Unban
+                            </button>
+                          ) : (
+                            <span className="text-gray-500 text-sm">No permission</span>
+                          )}
                         </td>
                       </tr>
                     ))

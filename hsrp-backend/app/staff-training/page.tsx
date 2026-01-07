@@ -69,21 +69,7 @@ function StaffTrainingContent() {
 
   const [isSending, setIsSending] = useState(false);
 
-  // Poll for updates every 2 seconds when in chat (skip if currently updating or sending)
-  useEffect(() => {
-    if (view === "chat" && activeSession && !isUpdating) {
-      const interval = setInterval(async () => {
-        if (isUpdating || isSending) return; // Pause polling during update/send
-        const updatedSessions = await getTrainingSessions();
-        const updatedSession = updatedSessions.find(s => s.id === activeSession.id);
-        if (updatedSession) {
-          setActiveSession(updatedSession);
-        }
-        setSessions(updatedSessions);
-      }, 2000);
-      return () => clearInterval(interval);
-    }
-  }, [view, activeSession?.id, isUpdating, isSending]);
+  // ...polling removed...
 
   const requestTraining = async () => {
     if (!user) return;

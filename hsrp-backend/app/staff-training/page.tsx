@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Sidebar from "../components/Sidebar";
 import {
@@ -17,7 +17,7 @@ interface User {
   adminLevel?: number;
 }
 
-export default function StaffTraining() {
+function StaffTrainingContent() {
   const searchParams = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
   const [sessions, setSessions] = useState<TrainingSession[]>([]);
@@ -426,5 +426,17 @@ export default function StaffTraining() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function StaffTraining() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <StaffTrainingContent />
+    </Suspense>
   );
 }

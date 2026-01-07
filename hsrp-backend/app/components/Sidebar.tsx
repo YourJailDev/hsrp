@@ -1,5 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { NAV_ITEMS, AdminLevel, getAdminLevelName } from "../config/roles";
 
 interface SidebarProps {
@@ -12,6 +16,8 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ user }: SidebarProps) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
   const userAdminLevel = user.adminLevel ?? AdminLevel.TRAINEE_MOD;
   
   // Filter nav items based on user's admin level
@@ -21,8 +27,8 @@ export default function Sidebar({ user }: SidebarProps) {
     ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
     : null;
 
-  return (
-    <div className="w-72 min-h-screen flex flex-col shrink-0 fixed left-0 top-0 bg-[#0d0d15] border-r border-[#1a1a2e]">
+  const NavContent = () => (
+    <>
       {/* Header */}
       <div className="p-4 flex items-center gap-3">
         <Image
@@ -36,23 +42,39 @@ export default function Sidebar({ user }: SidebarProps) {
           <h1 className="text-white font-bold text-sm">HSRP Connect</h1>
           <p className="text-gray-500 text-xs">Version 1</p>
         </div>
-        <button className="ml-auto text-gray-500 hover:text-white transition-colors">
+        {/* Close button for mobile */}
+        <button 
+          onClick={() => setMobileMenuOpen(false)}
+          className="ml-auto text-gray-500 hover:text-white transition-colors lg:hidden"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        {/* Notification bell for desktop */}
+        <button className="ml-auto text-gray-500 hover:text-white transition-colors hidden lg:block">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
         </button>
       </div>
 
-
       {/* Navigation */}
       <div className="px-3 mt-2 flex-1">
         <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider mb-3 px-2">Navigation</p>
         <nav className="flex flex-col gap-1">
-          {filteredNavItems.map((item, index) => (
-            <Link key={item.icon} href={item.href} className="block">
+          {filteredNavItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+            <Link 
+              key={item.icon} 
+              href={item.href} 
+              className="block"
+              onClick={() => setMobileMenuOpen(false)}
+            >
               <div 
                 className={`flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white rounded-xl transition-all hover:bg-[#1a1a2e] ${
-                  index === 0 ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : ''
+                  isActive ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : ''
                 }`}
               >
                 {item.icon === "dashboard" && (
@@ -94,7 +116,8 @@ export default function Sidebar({ user }: SidebarProps) {
                 <span className="text-sm font-medium">{item.name}</span>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </nav>
       </div>
 
@@ -127,6 +150,52 @@ export default function Sidebar({ user }: SidebarProps) {
           </div>
         </div>
       )}
-    </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile Header Bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-[#0d0d15] border-b border-[#1a1a2e] px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Image
+            src="https://images-ext-1.discordapp.net/external/zHtYuWHJ4jcw2EiyELgUy7WaF2oWpO8br0FmBzgJa2c/%3Fsize%3D512/https/cdn.discordapp.com/icons/1441821616186196191/8db10a79e33d3388a413c6d3989385e8.png?format=webp&quality=lossless&width=160&height=160"
+            alt="Logo"
+            width={32}
+            height={32}
+            className="rounded-lg"
+          />
+          <h1 className="text-white font-bold text-sm">HSRP Connect</h1>
+        </div>
+        <button 
+          onClick={() => setMobileMenuOpen(true)}
+          className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-[#1a1a2e] transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile Sidebar */}
+      <div className={`lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-[#0d0d15] border-r border-[#1a1a2e] transform transition-transform duration-300 ease-in-out flex flex-col ${
+        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <NavContent />
+      </div>
+
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:flex w-72 min-h-screen flex-col shrink-0 fixed left-0 top-0 bg-[#0d0d15] border-r border-[#1a1a2e]">
+        <NavContent />
+      </div>
+    </>
   );
 }

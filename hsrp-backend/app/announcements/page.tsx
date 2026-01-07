@@ -127,14 +127,14 @@ export default function Announcements() {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex">
         <Sidebar user={user} />
-        <main className="flex-1 ml-72 p-8 flex items-center justify-center">
+        <main className="flex-1 lg:ml-72 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8 flex items-center justify-center">
           <div className="text-center">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-500/20 flex items-center justify-center">
               <svg className="w-10 h-10 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">Access Denied</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-white mb-2">Access Denied</h1>
             <p className="text-gray-400 mb-6">Only Direction Board members can manage announcements.</p>
             <a href="/dashboard" className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors inline-block">
               Return to Dashboard
@@ -149,15 +149,15 @@ export default function Announcements() {
     <div className="min-h-screen bg-[#0a0a0f] flex">
       <Sidebar user={user} />
 
-      <main className="flex-1 ml-72 p-8">
-        <div className="mb-6 flex items-center justify-between">
+      <main className="flex-1 lg:ml-72 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white">Announcements 📢</h1>
-            <p className="text-gray-400 mt-1">Manage and create announcements for HSRP staff</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Announcements 📢</h1>
+            <p className="text-gray-400 mt-1 text-sm sm:text-base">Manage and create announcements for HSRP staff</p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-all text-sm font-medium"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-all text-sm font-medium w-fit"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

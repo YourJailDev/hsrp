@@ -11,11 +11,11 @@ export default async function StaffHandbook() {
     <div className="min-h-screen bg-[#0a0a0f] flex">
       <Sidebar user={user} />
 
-      <main className="flex-1 ml-72 p-8">
-        <div className="mb-6 flex items-center justify-between">
+      <main className="flex-1 lg:ml-72 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white">Staff Handbook 📖</h1>
-            <p className="text-gray-400 mt-1">Official guidelines and procedures for HSRP staff members</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Staff Handbook 📖</h1>
+            <p className="text-gray-400 mt-1 text-sm sm:text-base">Official guidelines and procedures for HSRP staff members</p>
           </div>
           <a
             href="https://docs.google.com/document/d/1nUHUWfbvCmvV_ToqjJ5V8UbDu0MqUdOnYJvU0ESE2uQ"

@@ -207,12 +207,12 @@ function StaffTrainingContent() {
     <div className="min-h-screen bg-[#0a0a0f] flex">
       <Sidebar user={user} />
 
-      <main className="flex-1 ml-72 p-8">
+      <main className="flex-1 lg:ml-72 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8">
         {view === "lobby" ? (
           <>
             <div className="mb-6">
-              <h1 className="text-2xl font-bold text-white">Staff Training 📝</h1>
-              <p className="text-gray-400 mt-1">
+              <h1 className="text-xl sm:text-2xl font-bold text-white">Staff Training 📝</h1>
+              <p className="text-gray-400 mt-1 text-sm sm:text-base">
                 {isTrainer ? "Claim training sessions or manage active trainings" : "Request moderation training from a trainer"}
               </p>
             </div>

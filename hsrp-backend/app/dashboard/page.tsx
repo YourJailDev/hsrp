@@ -10,7 +10,7 @@ export default async function Dashboard() {
   return (
     <div className="flex min-h-screen bg-[#0a0a0f]">
       <Sidebar user={user} />
-      <main className="flex-1 ml-72 relative overflow-hidden">
+      <main className="flex-1 lg:ml-72 relative overflow-hidden pt-16 lg:pt-0">
         {/* Background with gradient overlay */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -21,9 +21,9 @@ export default async function Dashboard() {
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/60 via-[#0a0a0f]/40 to-[#0a0a0f]" />
         
         {/* Content */}
-        <div className="relative z-10 p-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Aloha, {user.username} 🌺</h1>
-          <p className="text-gray-300 mb-8">
+        <div className="relative z-10 p-4 sm:p-6 lg:p-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Aloha, {user.username} 🌺</h1>
+          <p className="text-gray-300 mb-6 sm:mb-8">
             Mahalo for keeping HSRP running smoothly
           </p>
 

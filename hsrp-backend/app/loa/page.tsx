@@ -198,15 +198,15 @@ export default function LOA() {
     <div className="min-h-screen bg-[#0a0a0f] flex">
       <Sidebar user={user} />
 
-      <main className="flex-1 ml-72 p-8">
-        <div className="mb-6 flex items-center justify-between">
+      <main className="flex-1 lg:ml-72 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white">Leave of Absence 🏖️</h1>
-            <p className="text-gray-400 mt-1">Submit and track your LOA requests</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Leave of Absence 🏖️</h1>
+            <p className="text-gray-400 mt-1 text-sm sm:text-base">Submit and track your LOA requests</p>
           </div>
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-all text-sm font-medium"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-all text-sm font-medium w-fit"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

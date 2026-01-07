@@ -1,6 +1,5 @@
 import { getAuthenticatedUser } from "../lib/auth";
 import Sidebar from "../components/Sidebar";
-import DashboardAnnouncements from "../components/DashboardAnnouncements";
 import Link from "next/link";
 
 export default async function Dashboard() {
@@ -88,9 +87,6 @@ export default async function Dashboard() {
                 </Link>
               </div>
             </div>
-
-            {/* Recent Announcements */}
-            <DashboardAnnouncements />
           </div>
         </div>
       </main>

@@ -72,15 +72,23 @@ export async function PUT(request: Request) {
   try {
     const updatedSession: TrainingSession = await request.json();
     const db = await getDatabase();
-    await db.collection<TrainingSession>("training_sessions").replaceOne(
+    if (!updatedSession.id) {
+      console.error("Session update failed: missing id", updatedSession);
+      return NextResponse.json({ error: "Session update failed: missing id" }, { status: 400 });
+    }
+    const result = await db.collection<TrainingSession>("training_sessions").replaceOne(
       { id: updatedSession.id },
       updatedSession,
       { upsert: true }
     );
+    if (result.modifiedCount === 0 && result.upsertedCount === 0) {
+      console.error("Session update failed: no document modified or upserted", updatedSession, result);
+      return NextResponse.json({ error: "Session update failed: no document modified or upserted" }, { status: 500 });
+    }
     return NextResponse.json(updatedSession);
   } catch (error) {
     console.error("Error updating session:", error);
-    return NextResponse.json({ error: "Failed to update session" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update session", details: error?.message || error }, { status: 500 });
   }
 }
 

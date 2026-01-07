@@ -79,12 +79,6 @@ export default async function Dashboard() {
                     <p className="text-white font-medium text-sm">Staff Handbook</p>
                   </div>
                 </Link>
-                <Link href="/staff-training" className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-600/30 to-green-800/30 rounded-xl hover:from-green-600/50 hover:to-green-800/50 transition-all border border-green-500/20 col-span-2">
-                  <span className="text-xl">📝</span>
-                  <div className="text-left">
-                    <p className="text-white font-medium text-sm">Staff Training</p>
-                  </div>
-                </Link>
               </div>
             </div>
           </div>

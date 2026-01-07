@@ -1,14 +1,8 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { getDatabase } from "@/app/lib/mongodb";
 
-// Force Node.js runtime (not Edge) to allow fs operations
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-// Server-side storage for training sessions
-const DATA_DIR = path.join(process.cwd(), "data");
-const SESSIONS_FILE = path.join(DATA_DIR, "training-sessions.json");
 
 export interface ChatMessage {
   id: string;
@@ -30,33 +24,6 @@ export interface TrainingSession {
   claimId?: string;
 }
 
-// Ensure data directory exists
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-}
-
-// Read sessions from file
-function getSessions(): TrainingSession[] {
-  ensureDataDir();
-  try {
-    if (fs.existsSync(SESSIONS_FILE)) {
-      const data = fs.readFileSync(SESSIONS_FILE, "utf-8");
-      return JSON.parse(data);
-    }
-  } catch (error) {
-    console.error("Error reading sessions:", error);
-  }
-  return [];
-}
-
-// Save sessions to file
-function saveSessions(sessions: TrainingSession[]) {
-  ensureDataDir();
-  fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2));
-}
-
 // GET - Fetch all sessions or specific session
 export async function GET(request: Request) {
   try {
@@ -64,18 +31,22 @@ export async function GET(request: Request) {
     const claimId = searchParams.get("claimId");
     const sessionId = searchParams.get("sessionId");
     
-    const sessions = getSessions();
+    const db = await getDatabase();
     
     if (claimId) {
-      const session = sessions.find(s => s.claimId === claimId);
+      const session = await db.collection<TrainingSession>("training_sessions").findOne({ claimId });
       return NextResponse.json(session || null);
     }
     
     if (sessionId) {
-      const session = sessions.find(s => s.id === sessionId);
+      const session = await db.collection<TrainingSession>("training_sessions").findOne({ id: sessionId });
       return NextResponse.json(session || null);
     }
     
+    const sessions = await db.collection<TrainingSession>("training_sessions")
+      .find({})
+      .sort({ createdAt: -1 })
+      .toArray();
     return NextResponse.json(sessions);
   } catch (error) {
     console.error("Error fetching sessions:", error);
@@ -87,9 +58,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session: TrainingSession = await request.json();
-    const sessions = getSessions();
-    const updated = [session, ...sessions];
-    saveSessions(updated);
+    const db = await getDatabase();
+    await db.collection<TrainingSession>("training_sessions").insertOne(session);
     return NextResponse.json(session);
   } catch (error) {
     console.error("Error creating session:", error);
@@ -101,9 +71,11 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const updatedSession: TrainingSession = await request.json();
-    const sessions = getSessions();
-    const updated = sessions.map((s) => (s.id === updatedSession.id ? updatedSession : s));
-    saveSessions(updated);
+    const db = await getDatabase();
+    await db.collection<TrainingSession>("training_sessions").replaceOne(
+      { id: updatedSession.id },
+      updatedSession
+    );
     return NextResponse.json(updatedSession);
   } catch (error) {
     console.error("Error updating session:", error);
@@ -115,10 +87,13 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { id } = await request.json();
-    const sessions = getSessions();
-    const updated = sessions.filter((s) => s.id !== id);
-    saveSessions(updated);
-    return NextResponse.json(updated);
+    const db = await getDatabase();
+    await db.collection<TrainingSession>("training_sessions").deleteOne({ id });
+    const sessions = await db.collection<TrainingSession>("training_sessions")
+      .find({})
+      .sort({ createdAt: -1 })
+      .toArray();
+    return NextResponse.json(sessions);
   } catch (error) {
     console.error("Error deleting session:", error);
     return NextResponse.json({ error: "Failed to delete session" }, { status: 500 });

@@ -1,6 +1,5 @@
 import { getAuthenticatedUser } from "../lib/auth";
 import Sidebar from "../components/Sidebar";
-import DashboardTrainingClaims from "../components/DashboardTrainingClaims";
 import DashboardAnnouncements from "../components/DashboardAnnouncements";
 import Link from "next/link";
 
@@ -93,9 +92,6 @@ export default async function Dashboard() {
             {/* Recent Announcements */}
             <DashboardAnnouncements />
           </div>
-
-          {/* Training Claims */}
-          <DashboardTrainingClaims />
         </div>
       </main>
     </div>

@@ -88,7 +88,10 @@ export async function PUT(request: Request) {
     return NextResponse.json(updatedSession);
   } catch (error) {
     console.error("Error updating session:", error);
-    return NextResponse.json({ error: "Failed to update session", details: error?.message || error }, { status: 500 });
+    const errorMessage = typeof error === "object" && error !== null && "message" in error
+      ? (error as { message: string }).message
+      : String(error);
+    return NextResponse.json({ error: "Failed to update session", details: errorMessage }, { status: 500 });
   }
 }
 

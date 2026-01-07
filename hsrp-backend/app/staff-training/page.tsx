@@ -67,11 +67,13 @@ function StaffTrainingContent() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeSession?.messages]);
 
-  // Poll for updates every 2 seconds when in chat (skip if currently updating)
+  const [isSending, setIsSending] = useState(false);
+
+  // Poll for updates every 2 seconds when in chat (skip if currently updating or sending)
   useEffect(() => {
     if (view === "chat" && activeSession && !isUpdating) {
       const interval = setInterval(async () => {
-        if (isUpdating) return; // Skip if an update is in progress
+        if (isUpdating || isSending) return; // Pause polling during update/send
         const updatedSessions = await getTrainingSessions();
         const updatedSession = updatedSessions.find(s => s.id === activeSession.id);
         if (updatedSession) {
@@ -81,7 +83,7 @@ function StaffTrainingContent() {
       }, 2000);
       return () => clearInterval(interval);
     }
-  }, [view, activeSession?.id]);
+  }, [view, activeSession?.id, isUpdating, isSending]);
 
   const requestTraining = async () => {
     if (!user) return;
@@ -143,10 +145,11 @@ function StaffTrainingContent() {
   };
 
   const sendMessage = async () => {
-    if (!messageInput.trim() || !activeSession || !user) return;
+    if (!messageInput.trim() || !activeSession || !user || isSending) return;
+    setIsSending(true);
 
     const newMessage: ChatMessage = {
-      id: Date.now().toString(),
+      id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
       sender: user.username,
       senderType: user.id === activeSession.traineeId ? "trainee" : "trainer",
       message: messageInput.trim(),
@@ -158,11 +161,22 @@ function StaffTrainingContent() {
       messages: [...activeSession.messages, newMessage],
     };
 
-    await updateTrainingSession(updatedSession);
-    const updatedSessions = await getTrainingSessions();
-    setSessions(updatedSessions);
+    // Optimistic UI update
     setActiveSession(updatedSession);
-    setMessageInput("");
+
+    try {
+      await updateTrainingSession(updatedSession);
+      const updatedSessions = await getTrainingSessions();
+      setSessions(updatedSessions);
+      setActiveSession(updatedSession);
+      setMessageInput("");
+    } catch (error) {
+      // Revert optimistic update and show error
+      setActiveSession(activeSession);
+      alert("Failed to send message. Please try again.");
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const completeSession = async () => {
@@ -426,15 +440,15 @@ function StaffTrainingContent() {
                       onChange={(e) => setMessageInput(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                       placeholder={activeSession?.status === "waiting" ? "Waiting for trainer..." : "Type a message..."}
-                      disabled={activeSession?.status === "waiting" && activeSession?.traineeId === user.id}
+                      disabled={isSending || (activeSession?.status === "waiting" && activeSession?.traineeId === user.id)}
                       className="flex-1 bg-[#0a0a0f]/50 text-white px-4 py-3 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-50"
                     />
                     <button
                       onClick={sendMessage}
-                      disabled={!messageInput.trim() || activeSession?.status === "waiting"}
+                      disabled={isSending || !messageInput.trim() || activeSession?.status === "waiting"}
                       className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                      Send
+                      {isSending ? "Sending..." : "Send"}
                     </button>
                   </div>
                 </div>

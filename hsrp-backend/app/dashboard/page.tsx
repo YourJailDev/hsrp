@@ -1,6 +1,7 @@
 import { getAuthenticatedUser } from "../lib/auth";
 import Sidebar from "../components/Sidebar";
 import DashboardTrainingClaims from "../components/DashboardTrainingClaims";
+import DashboardAnnouncements from "../components/DashboardAnnouncements";
 import Link from "next/link";
 
 export default async function Dashboard() {
@@ -90,21 +91,7 @@ export default async function Dashboard() {
             </div>
 
             {/* Recent Announcements */}
-            <div className="bg-[#1a1a2e]/80 backdrop-blur-sm rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-white font-semibold text-lg">Recent Announcements 🌺</h2>
-                <button className="text-sm text-gray-400 hover:text-white px-3 py-1 rounded-lg bg-[#2a2a3e]">Manage</button>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-[#2a2a3e]/50">
-                  <span className="text-xl">📢</span>
-                  <div>
-                    <p className="text-white text-sm">No announcements yet</p>
-                    <p className="text-gray-500 text-xs">Check back later</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <DashboardAnnouncements />
           </div>
 
           {/* Training Claims */}

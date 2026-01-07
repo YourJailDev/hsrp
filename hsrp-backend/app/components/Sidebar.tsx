@@ -43,10 +43,6 @@ export default function Sidebar({ user }: SidebarProps) {
         </button>
       </div>
 
-      {/* Subtitle */}
-      <div className="px-4 pb-4">
-        <p className="text-gray-500 text-xs">Hawaii State Roleplay –</p> 
-      </div>
 
       {/* Navigation */}
       <div className="px-3 mt-2 flex-1">

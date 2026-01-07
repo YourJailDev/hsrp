@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
+import { AdminLevel } from "../config/roles";
+
+// Owner user ID - always has full access
+const OWNER_USER_ID = "745175427533766726";
 
 interface User {
   id: string;
@@ -19,10 +23,28 @@ interface Announcement {
   priority: "low" | "medium" | "high";
 }
 
+const STORAGE_KEY = "hsrp_announcements";
+
+function getStoredAnnouncements(): Announcement[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveAnnouncements(announcements: Announcement[]): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(announcements));
+}
+
 export default function Announcements() {
   const [user, setUser] = useState<User | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [hasPermission, setHasPermission] = useState(false);
   const [newAnnouncement, setNewAnnouncement] = useState({
     title: "",
     content: "",
@@ -37,16 +59,24 @@ export default function Announcements() {
       try {
         const userData = JSON.parse(decodeURIComponent(userCookie.split("=")[1]));
         setUser(userData);
+        
+        // Check if user is owner or Direction Board
+        const isOwner = userData.id === OWNER_USER_ID;
+        const isDirectionBoard = (userData.adminLevel ?? 0) >= AdminLevel.DIRECTION_BOARD;
+        setHasPermission(isOwner || isDirectionBoard);
       } catch {
         window.location.href = "/";
       }
     } else {
       window.location.href = "/";
     }
+
+    // Load announcements from storage
+    setAnnouncements(getStoredAnnouncements());
   }, []);
 
   const handleCreateAnnouncement = () => {
-    if (!newAnnouncement.title.trim() || !newAnnouncement.content.trim()) return;
+    if (!newAnnouncement.title.trim() || !newAnnouncement.content.trim() || !hasPermission) return;
 
     const announcement: Announcement = {
       id: Date.now().toString(),
@@ -57,13 +87,18 @@ export default function Announcements() {
       priority: newAnnouncement.priority,
     };
 
-    setAnnouncements([announcement, ...announcements]);
+    const updated = [announcement, ...announcements];
+    setAnnouncements(updated);
+    saveAnnouncements(updated);
     setNewAnnouncement({ title: "", content: "", priority: "medium" });
     setShowCreateModal(false);
   };
 
   const deleteAnnouncement = (id: string) => {
-    setAnnouncements(announcements.filter((a) => a.id !== id));
+    if (!hasPermission) return;
+    const updated = announcements.filter((a) => a.id !== id);
+    setAnnouncements(updated);
+    saveAnnouncements(updated);
   };
 
   const getPriorityColor = (priority: string) => {
@@ -83,6 +118,29 @@ export default function Announcements() {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
         <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
+  // Show access denied if user doesn't have permission
+  if (!hasPermission) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex">
+        <Sidebar user={user} />
+        <main className="flex-1 ml-72 p-8 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-500/20 flex items-center justify-center">
+              <svg className="w-10 h-10 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-2">Access Denied</h1>
+            <p className="text-gray-400 mb-6">Only Direction Board members can manage announcements.</p>
+            <a href="/dashboard" className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors inline-block">
+              Return to Dashboard
+            </a>
+          </div>
+        </main>
       </div>
     );
   }

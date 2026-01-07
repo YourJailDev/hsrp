@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
+// Force Node.js runtime (not Edge) to allow fs operations
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 // Server-side storage for training sessions
 const DATA_DIR = path.join(process.cwd(), "data");
 const SESSIONS_FILE = path.join(DATA_DIR, "training-sessions.json");

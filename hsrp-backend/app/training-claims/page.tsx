@@ -30,6 +30,7 @@ export default function TrainingClaims() {
   const [claims, setClaims] = useState<TrainingClaim[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "approved" | "denied">("all");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newClaim, setNewClaim] = useState({
     trainingType: TRAINING_TYPES[0],
     trainee: "",
@@ -61,7 +62,9 @@ export default function TrainingClaims() {
   }, []);
 
   const handleCreateClaim = async () => {
-    if (!newClaim.trainee.trim() || !newClaim.date) return;
+    if (!newClaim.trainee.trim() || !newClaim.date || isSubmitting) return;
+    
+    setIsSubmitting(true);
 
     const claim: TrainingClaim = {
       id: Date.now().toString(),
@@ -74,10 +77,14 @@ export default function TrainingClaims() {
       claimedAt: new Date().toISOString(),
     };
 
-    const updated = await addTrainingClaim(claim);
-    setClaims(updated);
-    setNewClaim({ trainingType: TRAINING_TYPES[0], trainee: "", date: "", notes: "" });
-    setShowCreateModal(false);
+    try {
+      const updated = await addTrainingClaim(claim);
+      setClaims(updated);
+      setNewClaim({ trainingType: TRAINING_TYPES[0], trainee: "", date: "", notes: "" });
+      setShowCreateModal(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleUpdateStatus = async (id: string, status: "approved" | "denied") => {
@@ -362,10 +369,10 @@ export default function TrainingClaims() {
                   </button>
                   <button
                     onClick={handleCreateClaim}
-                    disabled={!newClaim.trainee.trim() || !newClaim.date}
+                    disabled={!newClaim.trainee.trim() || !newClaim.date || isSubmitting}
                     className="flex-1 px-4 py-3 rounded-xl text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    Log Training
+                    {isSubmitting ? "Saving..." : "Log Training"}
                   </button>
                 </div>
               </div>

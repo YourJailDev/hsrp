@@ -74,7 +74,8 @@ export async function PUT(request: Request) {
     const db = await getDatabase();
     await db.collection<TrainingSession>("training_sessions").replaceOne(
       { id: updatedSession.id },
-      updatedSession
+      updatedSession,
+      { upsert: true }
     );
     return NextResponse.json(updatedSession);
   } catch (error) {

@@ -25,6 +25,7 @@ function StaffTrainingContent() {
   const [activeSession, setActiveSession] = useState<TrainingSession | null>(null);
   const [messageInput, setMessageInput] = useState("");
   const [view, setView] = useState<"lobby" | "chat">("lobby");
+  const [isUpdating, setIsUpdating] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const isTrainer = (user?.adminLevel ?? 0) >= 4; // Internal Affairs and above can be trainers
@@ -66,10 +67,11 @@ function StaffTrainingContent() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeSession?.messages]);
 
-  // Poll for updates every 2 seconds when in chat
+  // Poll for updates every 2 seconds when in chat (skip if currently updating)
   useEffect(() => {
-    if (view === "chat" && activeSession) {
+    if (view === "chat" && activeSession && !isUpdating) {
       const interval = setInterval(async () => {
+        if (isUpdating) return; // Skip if an update is in progress
         const updatedSessions = await getTrainingSessions();
         const updatedSession = updatedSessions.find(s => s.id === activeSession.id);
         if (updatedSession) {
@@ -164,8 +166,10 @@ function StaffTrainingContent() {
   };
 
   const completeSession = async () => {
-    if (!activeSession || !user) return;
+    if (!activeSession || !user || isUpdating) return;
 
+    setIsUpdating(true);
+    
     const updatedSession: TrainingSession = {
       ...activeSession,
       status: "completed",
@@ -181,10 +185,18 @@ function StaffTrainingContent() {
       ],
     };
 
-    await updateTrainingSession(updatedSession);
-    const updatedSessions = await getTrainingSessions();
-    setSessions(updatedSessions);
+    // Update local state immediately (optimistic update)
     setActiveSession(updatedSession);
+    
+    try {
+      await updateTrainingSession(updatedSession);
+      // Wait a moment for DB to sync, then fetch fresh data
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const updatedSessions = await getTrainingSessions();
+      setSessions(updatedSessions);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const leaveSession = async () => {
@@ -356,9 +368,10 @@ function StaffTrainingContent() {
                 {isTrainer && activeSession?.status === "active" && (
                   <button
                     onClick={completeSession}
-                    className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors text-sm"
+                    disabled={isUpdating}
+                    className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Complete Training
+                    {isUpdating ? "Completing..." : "Complete Training"}
                   </button>
                 )}
               </div>

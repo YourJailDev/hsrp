@@ -1,4 +1,4 @@
-// Simple localStorage-based storage for training claims
+// API-based storage for training claims (shared across all users)
 
 export interface TrainingClaim {
   id: string;
@@ -11,59 +11,83 @@ export interface TrainingClaim {
   claimedAt: string;
 }
 
-const STORAGE_KEY = "hsrp_training_claims";
-
-export function getTrainingClaims(): TrainingClaim[] {
-  if (typeof window === "undefined") return [];
-  
+// Fetch all training claims from API
+export async function getTrainingClaims(): Promise<TrainingClaim[]> {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
+    const response = await fetch("/api/training/claims");
+    if (!response.ok) throw new Error("Failed to fetch claims");
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching claims:", error);
     return [];
   }
 }
 
-export function saveTrainingClaims(claims: TrainingClaim[]): void {
-  if (typeof window === "undefined") return;
-  
+// Add a new training claim
+export async function addTrainingClaim(claim: TrainingClaim): Promise<TrainingClaim[]> {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(claims));
+    const response = await fetch("/api/training/claims", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(claim),
+    });
+    if (!response.ok) throw new Error("Failed to add claim");
+    return await response.json();
   } catch (error) {
-    console.error("Failed to save training claims:", error);
+    console.error("Error adding claim:", error);
+    return [];
   }
 }
 
-export function addTrainingClaim(claim: TrainingClaim): TrainingClaim[] {
-  const claims = getTrainingClaims();
-  const updated = [claim, ...claims];
-  saveTrainingClaims(updated);
-  return updated;
+// Update claim status
+export async function updateTrainingClaimStatus(
+  id: string,
+  status: "approved" | "denied"
+): Promise<TrainingClaim[]> {
+  try {
+    const response = await fetch("/api/training/claims", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    });
+    if (!response.ok) throw new Error("Failed to update claim");
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating claim:", error);
+    return [];
+  }
 }
 
-export function updateTrainingClaimStatus(id: string, status: "approved" | "denied"): TrainingClaim[] {
-  const claims = getTrainingClaims();
-  const updated = claims.map((c) => (c.id === id ? { ...c, status } : c));
-  saveTrainingClaims(updated);
-  return updated;
+// Delete a claim
+export async function deleteTrainingClaim(id: string): Promise<TrainingClaim[]> {
+  try {
+    const response = await fetch("/api/training/claims", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    if (!response.ok) throw new Error("Failed to delete claim");
+    return await response.json();
+  } catch (error) {
+    console.error("Error deleting claim:", error);
+    return [];
+  }
 }
 
-export function deleteTrainingClaim(id: string): TrainingClaim[] {
-  const claims = getTrainingClaims();
-  const updated = claims.filter((c) => c.id !== id);
-  saveTrainingClaims(updated);
-  return updated;
-}
-
-// Get recent claims (last 5)
-export function getRecentTrainingClaims(limit: number = 5): TrainingClaim[] {
-  const claims = getTrainingClaims();
+// Get recent claims (fetches all and returns first N)
+export async function getRecentTrainingClaims(limit: number = 5): Promise<TrainingClaim[]> {
+  const claims = await getTrainingClaims();
   return claims.slice(0, limit);
 }
 
 // Get stats
-export function getTrainingClaimsStats() {
-  const claims = getTrainingClaims();
+export async function getTrainingClaimsStats(): Promise<{
+  total: number;
+  pending: number;
+  approved: number;
+  denied: number;
+}> {
+  const claims = await getTrainingClaims();
   return {
     total: claims.length,
     pending: claims.filter((c) => c.status === "pending").length,
@@ -93,32 +117,50 @@ export interface ChatMessage {
   timestamp: string;
 }
 
-const SESSIONS_STORAGE_KEY = "hsrp_training_sessions";
-
-export function getTrainingSessions(): TrainingSession[] {
-  if (typeof window === "undefined") return [];
+// Fetch all training sessions from API
+export async function getTrainingSessions(): Promise<TrainingSession[]> {
   try {
-    const stored = localStorage.getItem(SESSIONS_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
+    const response = await fetch("/api/training/sessions");
+    if (!response.ok) throw new Error("Failed to fetch sessions");
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching sessions:", error);
     return [];
   }
 }
 
-export function saveTrainingSessions(sessions: TrainingSession[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
+// Save/update a training session
+export async function saveTrainingSessions(sessions: TrainingSession[]): Promise<void> {
+  // This is now handled by individual API calls
+  // Kept for backward compatibility but sessions should be updated individually
+  console.warn("saveTrainingSessions is deprecated, use updateTrainingSession instead");
+}
+
+// Update a single session
+export async function updateTrainingSession(session: TrainingSession): Promise<TrainingSession | null> {
+  try {
+    const response = await fetch("/api/training/sessions", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(session),
+    });
+    if (!response.ok) throw new Error("Failed to update session");
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating session:", error);
+    return null;
+  }
 }
 
 // Create a training session from a claim
-export function createSessionFromClaim(
+export async function createSessionFromClaim(
   claim: TrainingClaim,
   trainerId: string,
   trainerName: string
-): TrainingSession {
+): Promise<TrainingSession> {
   const session: TrainingSession = {
     id: Date.now().toString(),
-    traineeId: claim.id, // Using claim ID as reference since we don't have trainee's Discord ID
+    traineeId: claim.id,
     traineeName: claim.trainee,
     trainerId: trainerId,
     trainerName: trainerName,
@@ -136,15 +178,44 @@ export function createSessionFromClaim(
     claimId: claim.id,
   };
 
-  const sessions = getTrainingSessions();
-  const updated = [session, ...sessions];
-  saveTrainingSessions(updated);
-
-  return session;
+  try {
+    const response = await fetch("/api/training/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(session),
+    });
+    if (!response.ok) throw new Error("Failed to create session");
+    return await response.json();
+  } catch (error) {
+    console.error("Error creating session:", error);
+    return session;
+  }
 }
 
 // Get session by claim ID
-export function getSessionByClaimId(claimId: string): TrainingSession | null {
-  const sessions = getTrainingSessions();
-  return sessions.find(s => s.claimId === claimId) || null;
+export async function getSessionByClaimId(claimId: string): Promise<TrainingSession | null> {
+  try {
+    const response = await fetch(`/api/training/sessions?claimId=${claimId}`);
+    if (!response.ok) throw new Error("Failed to fetch session");
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching session by claim ID:", error);
+    return null;
+  }
+}
+
+// Create a new training session (for request training flow)
+export async function createTrainingSession(session: TrainingSession): Promise<TrainingSession> {
+  try {
+    const response = await fetch("/api/training/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(session),
+    });
+    if (!response.ok) throw new Error("Failed to create session");
+    return await response.json();
+  } catch (error) {
+    console.error("Error creating session:", error);
+    return session;
+  }
 }

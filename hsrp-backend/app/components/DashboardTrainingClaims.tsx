@@ -9,8 +9,13 @@ export default function DashboardTrainingClaims() {
   const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, denied: 0 });
 
   useEffect(() => {
-    setRecentClaims(getRecentTrainingClaims(3));
-    setStats(getTrainingClaimsStats());
+    const loadData = async () => {
+      const claims = await getRecentTrainingClaims(3);
+      setRecentClaims(claims);
+      const claimsStats = await getTrainingClaimsStats();
+      setStats(claimsStats);
+    };
+    loadData();
   }, []);
 
   const getStatusColor = (status: string) => {

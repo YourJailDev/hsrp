@@ -52,11 +52,15 @@ export default function TrainingClaims() {
       window.location.href = "/";
     }
     
-    // Load claims from storage
-    setClaims(getTrainingClaims());
+    // Load claims from API
+    const loadClaims = async () => {
+      const claims = await getTrainingClaims();
+      setClaims(claims);
+    };
+    loadClaims();
   }, []);
 
-  const handleCreateClaim = () => {
+  const handleCreateClaim = async () => {
     if (!newClaim.trainee.trim() || !newClaim.date) return;
 
     const claim: TrainingClaim = {
@@ -70,27 +74,27 @@ export default function TrainingClaims() {
       claimedAt: new Date().toISOString(),
     };
 
-    const updated = addTrainingClaim(claim);
+    const updated = await addTrainingClaim(claim);
     setClaims(updated);
     setNewClaim({ trainingType: TRAINING_TYPES[0], trainee: "", date: "", notes: "" });
     setShowCreateModal(false);
   };
 
-  const handleUpdateStatus = (id: string, status: "approved" | "denied") => {
-    const updated = updateTrainingClaimStatus(id, status);
+  const handleUpdateStatus = async (id: string, status: "approved" | "denied") => {
+    const updated = await updateTrainingClaimStatus(id, status);
     setClaims(updated);
   };
 
-  const handleDelete = (id: string) => {
-    const updated = deleteTrainingClaim(id);
+  const handleDelete = async (id: string) => {
+    const updated = await deleteTrainingClaim(id);
     setClaims(updated);
   };
 
-  const handleStartTraining = (claim: TrainingClaim) => {
+  const handleStartTraining = async (claim: TrainingClaim) => {
     if (!user) return;
     
     // Check if a session already exists for this claim
-    const existingSession = getSessionByClaimId(claim.id);
+    const existingSession = await getSessionByClaimId(claim.id);
     if (existingSession) {
       // If session exists, redirect to it
       router.push(`/staff-training?sessionId=${existingSession.id}`);
@@ -98,11 +102,12 @@ export default function TrainingClaims() {
     }
     
     // Create a new training session from the claim
-    const session = createSessionFromClaim(claim, user.id, user.username);
+    const session = await createSessionFromClaim(claim, user.id, user.username);
     
     // Mark the claim as approved since training is starting
-    updateTrainingClaimStatus(claim.id, "approved");
-    setClaims(getTrainingClaims());
+    await updateTrainingClaimStatus(claim.id, "approved");
+    const updatedClaims = await getTrainingClaims();
+    setClaims(updatedClaims);
     
     // Redirect to staff training with the session ID
     router.push(`/staff-training?sessionId=${session.id}`);

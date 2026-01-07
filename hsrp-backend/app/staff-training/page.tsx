@@ -5,7 +5,8 @@ import { useSearchParams } from "next/navigation";
 import Sidebar from "../components/Sidebar";
 import {
   getTrainingSessions,
-  saveTrainingSessions,
+  updateTrainingSession,
+  createTrainingSession,
   type TrainingSession,
   type ChatMessage,
 } from "../lib/storage";
@@ -43,18 +44,21 @@ function StaffTrainingContent() {
       window.location.href = "/";
     }
 
-    const loadedSessions = getTrainingSessions();
-    setSessions(loadedSessions);
+    const loadSessions = async () => {
+      const loadedSessions = await getTrainingSessions();
+      setSessions(loadedSessions);
 
-    // Check if we have a sessionId in URL params (from training claims)
-    const sessionId = searchParams.get("sessionId");
-    if (sessionId) {
-      const session = loadedSessions.find(s => s.id === sessionId);
-      if (session) {
-        setActiveSession(session);
-        setView("chat");
+      // Check if we have a sessionId in URL params (from training claims)
+      const sessionId = searchParams.get("sessionId");
+      if (sessionId) {
+        const session = loadedSessions.find(s => s.id === sessionId);
+        if (session) {
+          setActiveSession(session);
+          setView("chat");
+        }
       }
-    }
+    };
+    loadSessions();
   }, [searchParams]);
 
   useEffect(() => {
@@ -65,8 +69,8 @@ function StaffTrainingContent() {
   // Poll for updates every 2 seconds when in chat
   useEffect(() => {
     if (view === "chat" && activeSession) {
-      const interval = setInterval(() => {
-        const updatedSessions = getTrainingSessions();
+      const interval = setInterval(async () => {
+        const updatedSessions = await getTrainingSessions();
         const updatedSession = updatedSessions.find(s => s.id === activeSession.id);
         if (updatedSession) {
           setActiveSession(updatedSession);
@@ -77,7 +81,7 @@ function StaffTrainingContent() {
     }
   }, [view, activeSession?.id]);
 
-  const requestTraining = () => {
+  const requestTraining = async () => {
     if (!user) return;
 
     const newSession: TrainingSession = {
@@ -97,14 +101,14 @@ function StaffTrainingContent() {
       createdAt: new Date().toISOString(),
     };
 
-    const updated = [newSession, ...sessions];
-    saveTrainingSessions(updated);
+    await createTrainingSession(newSession);
+    const updated = await getTrainingSessions();
     setSessions(updated);
     setActiveSession(newSession);
     setView("chat");
   };
 
-  const claimSession = (session: TrainingSession) => {
+  const claimSession = async (session: TrainingSession) => {
     if (!user || !isTrainer) return;
 
     const updatedSession: TrainingSession = {
@@ -124,8 +128,8 @@ function StaffTrainingContent() {
       ],
     };
 
-    const updatedSessions = sessions.map(s => s.id === session.id ? updatedSession : s);
-    saveTrainingSessions(updatedSessions);
+    await updateTrainingSession(updatedSession);
+    const updatedSessions = await getTrainingSessions();
     setSessions(updatedSessions);
     setActiveSession(updatedSession);
     setView("chat");
@@ -136,7 +140,7 @@ function StaffTrainingContent() {
     setView("chat");
   };
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!messageInput.trim() || !activeSession || !user) return;
 
     const newMessage: ChatMessage = {
@@ -152,14 +156,14 @@ function StaffTrainingContent() {
       messages: [...activeSession.messages, newMessage],
     };
 
-    const updatedSessions = sessions.map(s => s.id === activeSession.id ? updatedSession : s);
-    saveTrainingSessions(updatedSessions);
+    await updateTrainingSession(updatedSession);
+    const updatedSessions = await getTrainingSessions();
     setSessions(updatedSessions);
     setActiveSession(updatedSession);
     setMessageInput("");
   };
 
-  const completeSession = () => {
+  const completeSession = async () => {
     if (!activeSession || !user) return;
 
     const updatedSession: TrainingSession = {
@@ -177,16 +181,17 @@ function StaffTrainingContent() {
       ],
     };
 
-    const updatedSessions = sessions.map(s => s.id === activeSession.id ? updatedSession : s);
-    saveTrainingSessions(updatedSessions);
+    await updateTrainingSession(updatedSession);
+    const updatedSessions = await getTrainingSessions();
     setSessions(updatedSessions);
     setActiveSession(updatedSession);
   };
 
-  const leaveSession = () => {
+  const leaveSession = async () => {
     setActiveSession(null);
     setView("lobby");
-    setSessions(getTrainingSessions());
+    const updatedSessions = await getTrainingSessions();
+    setSessions(updatedSessions);
   };
 
   if (!user) {

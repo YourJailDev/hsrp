@@ -147,18 +147,20 @@ function StaffTrainingContent() {
       messages: [...activeSession.messages, newMessage],
     };
 
-    // Optimistic UI update
-    setActiveSession(updatedSession);
-
     try {
+      // Update session in backend and get the latest session
       await updateTrainingSession(updatedSession);
-      const updatedSessions = await getTrainingSessions();
-      setSessions(updatedSessions);
-      setActiveSession(updatedSession);
+      const latestSessions = await getTrainingSessions();
+      setSessions(latestSessions);
+      // Find the latest version of this session from backend
+      const latestSession = latestSessions.find(s => s.id === updatedSession.id);
+      if (latestSession) {
+        setActiveSession(latestSession);
+      } else {
+        setActiveSession(null);
+      }
       setMessageInput("");
     } catch (error) {
-      // Revert optimistic update and show error
-      setActiveSession(activeSession);
       alert("Failed to send message. Please try again.");
     } finally {
       setIsSending(false);

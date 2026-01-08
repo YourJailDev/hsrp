@@ -303,8 +303,11 @@ export default function StaffTrainingPage() {
               <div className="flex-1 rounded-xl overflow-hidden bg-[#0a0a0f]/50 flex flex-col">
                 {group ? (
                   <>
-                    <div className="flex-1 overflow-auto">
-                      <CometChatMessageList group={group} />
+                    <div className="flex-1 min-h-0 relative">
+                      <CometChatMessageList
+                        group={group}
+                        scrollToBottomOnNewMessages={true}
+                      />
                     </div>
                     <div className="border-t border-white/10 p-4 bg-[#0a0a0f]/30">
                       <CometChatMessageComposer group={group} />

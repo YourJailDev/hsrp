@@ -136,21 +136,46 @@ body {
 }
 
 /* Message Bubble Styling */
+.cometchat-message-bubble-view {
+  margin-bottom: 8px !important;
+}
+
 .cometchat-text-bubble {
   background-color: #1a1a2e !important;
   color: white !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  padding: 8px 12px !important;
-  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  max-width: 85% !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Outgoing Message Bubble (My messages) - make them blue */
 .cometchat-message-bubble-outgoing .cometchat-text-bubble {
   background-color: var(--cometchat-primary-color) !important;
+  color: #ffffff !important;
   border: none !important;
+  border-bottom-right-radius: 4px !important;
 }
 
 /* Incoming Message Bubble (Others) - make them dark card color */
 .cometchat-message-bubble-incoming .cometchat-text-bubble {
   background-color: #2a2a3e !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-bottom-left-radius: 4px !important;
+}
+
+/* Ensure child text is also white */
+.cometchat-text-bubble * {
+  color: #ffffff !important;
+}
+
+/* Force specific fix for the "unreadable" dark text in the screenshot */
+[class*='cometchat-message-bubble'] [class*='text'],
+[class*='cometchat-message-bubble'] p,
+[class*='cometchat-message-bubble'] span {
+  color: #ffffff !important;
 }

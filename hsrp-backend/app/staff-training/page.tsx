@@ -11,6 +11,11 @@ const CometChatMessageList = dynamic(
   { ssr: false }
 );
 
+const CometChatMessageComposer = dynamic(
+  () => import("@cometchat/chat-uikit-react").then((mod) => mod.CometChatMessageComposer),
+  { ssr: false }
+);
+
 // CometChat credentials from environment variables
 const COMETCHAT_APP_ID = process.env.NEXT_PUBLIC_COMETCHAT_APP_ID || "16739610cda03399a";
 const COMETCHAT_REGION = process.env.NEXT_PUBLIC_COMETCHAT_REGION || "US";
@@ -252,7 +257,14 @@ export default function StaffTrainingPage() {
               </div>
               <div className="flex-1 rounded-xl overflow-hidden bg-[#0a0a0f]/50">
                 {group ? (
-                  <CometChatMessageList group={group} />
+                  <>
+                    <div className="flex-1 overflow-auto">
+                      <CometChatMessageList group={group} />
+                    </div>
+                    <div className="border-t border-white/10">
+                      <CometChatMessageComposer group={group} />
+                    </div>
+                  </>
                 ) : (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-gray-400">Loading chat...</div>

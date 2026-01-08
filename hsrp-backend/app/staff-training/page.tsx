@@ -60,28 +60,28 @@ export default function StaffTrainingPage() {
 
     const initCometChat = async () => {
       try {
-        // Dynamically import CometChat SDK - use default export for Next.js compatibility
+        // Dynamically import CometChat UIKit for initialization
+        const { CometChatUIKit, UIKitSettingsBuilder } = await import("@cometchat/chat-uikit-react");
+
+        // Initialize UIKit (this also initializes the SDK)
+        const UIKitSettings = new UIKitSettingsBuilder()
+          .setAppId(COMETCHAT_APP_ID)
+          .setRegion(COMETCHAT_REGION)
+          .setAuthKey(COMETCHAT_AUTH_KEY)
+          .subscribePresenceForAllUsers()
+          .build();
+
+        await CometChatUIKit.init(UIKitSettings);
+        console.log("CometChat UIKit initialized successfully");
+
+        // Also get CometChat SDK reference for other operations
         const CometChatModule = await import("@cometchat/chat-sdk-javascript");
         const CometChat = CometChatModule.CometChat || CometChatModule.default?.CometChat || CometChatModule.default;
         cometChatRef.current = CometChat;
 
-        if (!CometChat || !CometChat.AppSettingsBuilder) {
-          console.error("CometChat SDK not properly loaded");
-          setError("Failed to load chat system. Please refresh the page.");
-          return;
-        }
-
-        const appSettings = new CometChat.AppSettingsBuilder()
-          .subscribePresenceForAllUsers()
-          .setRegion(COMETCHAT_REGION)
-          .build();
-
-        await CometChat.init(COMETCHAT_APP_ID, appSettings);
-        console.log("CometChat initialized successfully");
-
         // Login to CometChat with user ID
         try {
-          await CometChat.login(user.id, COMETCHAT_AUTH_KEY);
+          await CometChatUIKit.login(user.id);
           console.log("CometChat login successful");
           setCometChatReady(true);
         } catch (loginErr: any) {
@@ -93,8 +93,8 @@ export default function StaffTrainingPage() {
             if (user.avatar && (user.avatar.startsWith('http://') || user.avatar.startsWith('https://'))) {
               cometUser.setAvatar(user.avatar);
             }
-            await CometChat.createUser(cometUser, COMETCHAT_AUTH_KEY);
-            await CometChat.login(user.id, COMETCHAT_AUTH_KEY);
+            await CometChatUIKit.createUser(cometUser);
+            await CometChatUIKit.login(user.id);
             console.log("CometChat user created and logged in");
             setCometChatReady(true);
           } else {

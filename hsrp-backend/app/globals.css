@@ -100,6 +100,9 @@ body {
   background: var(--cometchat-primary-color) !important;
   opacity: 1 !important;
   cursor: pointer !important;
+  display: flex !important;
+  /* Force display */
+  visibility: visible !important;
 }
 
 /* Ensure Send Button icon is white */

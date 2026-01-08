@@ -20,7 +20,10 @@ export default async function Home() {
           height={80}
           className="mb-6 rounded-xl"
         />
-        <h1 className="text-2xl font-bold text-white mb-4">HSRP</h1><h1 className="text-2xl font-semibold text-white mb-4">Connect</h1>
+        <h1 className="text-2xl text-white mb-4">
+          <span className="font-bold">HSRP</span>{" "}
+          <span className="font-normal opacity-70">Connect</span>
+        </h1>
         <p className="text-zinc-400 text-center mb-2">
           Welcome to HSRP Connect. Click the button below to authenticate with Discord OAuth2 to access your dashboard.
         </p>

@@ -104,7 +104,8 @@ export default function StaffTrainingHostPage() {
                     if (loginErr.code === "ERR_UID_NOT_FOUND") {
                         const cometUser = new CometChat.User(user.id);
                         cometUser.setName(user.username);
-                        if (user.avatar) {
+                        // Only set avatar if it's a valid URL
+                        if (user.avatar && (user.avatar.startsWith('http://') || user.avatar.startsWith('https://'))) {
                             cometUser.setAvatar(user.avatar);
                         }
                         await CometChat.createUser(cometUser, COMETCHAT_AUTH_KEY);

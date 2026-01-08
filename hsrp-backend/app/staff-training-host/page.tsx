@@ -76,10 +76,10 @@ export default function StaffTrainingHostPage() {
         const initCometChat = async () => {
             try {
                 // Dynamically import CometChat SDK to avoid SSR issues
-                const { CometChat, AppSettingsBuilder } = await import("@cometchat/chat-sdk-javascript");
+                const { CometChat } = await import("@cometchat/chat-sdk-javascript");
                 cometChatRef.current = CometChat;
 
-                const appSettings = new AppSettingsBuilder()
+                const appSettings = new CometChat.AppSettingsBuilder()
                     .subscribePresenceForAllUsers()
                     .setRegion(COMETCHAT_REGION)
                     .build();

@@ -94,9 +94,14 @@ export default function StaffTrainingPage() {
           if (loginErr.code === "ERR_UID_NOT_FOUND") {
             const cometUser = new CometChat.User(user.id);
             cometUser.setName(user.username);
-            // Only set avatar if it's a valid URL
-            if (user.avatar && (user.avatar.startsWith('http://') || user.avatar.startsWith('https://'))) {
-              cometUser.setAvatar(user.avatar);
+
+            // Construct valid Discord avatar URL
+            const avatarUrl = user.avatar
+              ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+              : null;
+
+            if (avatarUrl) {
+              cometUser.setAvatar(avatarUrl);
             }
             await CometChatUIKit.createUser(cometUser);
             await CometChatUIKit.login(user.id);

@@ -1,0 +1,2 @@
+declare function useCometChatIncomingCall(loggedInUser: any, setLoggedInUser: any, call: CometChat.Call, attachListeners: Function, removeListener: Function, acceptCallButtonRef: any, rejectCallButtonRef: any, showCall: any, callRef: any, acceptIncomingCall: Function, rejectIncomingCall: Function, showIncomingCallScreen: boolean, subscribeToEvents: Function, errorHandler: (error: unknown, source?: string) => void): void;
+export { useCometChatIncomingCall };

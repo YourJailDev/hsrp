@@ -1,0 +1,6 @@
+export declare class ChatSdkEventInitializer {
+    private static messageListenerId;
+    static attachListeners(): void;
+    static detachListeners(): void;
+    private static getMessageListenerObject;
+}

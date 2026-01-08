@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@cometchat/chat-sdk-javascript": "^4.1.5",
+    "@cometchat/chat-uikit-react": "^6.3.6"
+  }
+}

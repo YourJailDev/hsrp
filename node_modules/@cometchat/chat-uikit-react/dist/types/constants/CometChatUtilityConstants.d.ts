@@ -1,0 +1,9 @@
+export declare class CometChatUtilityConstants {
+    static TextFormatter: Readonly<{
+        KEY_UP_DEBOUNCE_TIME: 300;
+    }>;
+    static MentionsTextFormatter: Readonly<{
+        MENTIONS_LIMIT: 10;
+        MENTIONS_HOVER_TIMEOUT: 500;
+    }>;
+}

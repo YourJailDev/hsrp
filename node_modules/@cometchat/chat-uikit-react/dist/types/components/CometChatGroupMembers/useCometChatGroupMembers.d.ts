@@ -1,0 +1,22 @@
+import React from "react";
+import { Action } from "./CometChatGroupMembers";
+import { GroupMembersManager } from "./controller";
+type Args = {
+    groupMemberRequestBuilder: CometChat.GroupMembersRequestBuilder | null;
+    searchRequestBuilder: CometChat.GroupMembersRequestBuilder | null;
+    searchText: string;
+    groupMembersManagerRef: React.MutableRefObject<GroupMembersManager | null>;
+    groupGuid: string;
+    fetchNextAndAppendGroupMembers: (id: string) => void;
+    fetchNextIdRef: React.MutableRefObject<string>;
+    dispatch: React.Dispatch<Action>;
+    loggedInUserRef: React.MutableRefObject<CometChat.User | null>;
+    errorHandler: (error: unknown, source?: string | undefined) => void;
+    updateGroupMemberScope: (newScope: string) => Promise<void>;
+    searchKeyword: string;
+    disableLoadingState: boolean;
+    groupMembersSearchText: React.MutableRefObject<string>;
+    hideUserStatus?: boolean;
+};
+export declare function Hooks(args: Args): void;
+export {};

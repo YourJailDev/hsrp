@@ -255,7 +255,7 @@ export default function StaffTrainingPage() {
                   Leave Session
                 </button>
               </div>
-              <div className="flex-1 rounded-xl overflow-hidden bg-[#0a0a0f]/50">
+              <div className="flex-1 rounded-xl overflow-hidden bg-[#0a0a0f]/50 flex flex-col">
                 {group ? (
                   <>
                     <div className="flex-1 overflow-auto">

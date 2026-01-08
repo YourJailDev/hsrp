@@ -76,7 +76,23 @@ export default function StaffTrainingHostPage() {
         const initCometChat = async () => {
             try {
                 // Dynamically import CometChat UIKit for initialization
-                const { CometChatUIKit, UIKitSettingsBuilder } = await import("@cometchat/chat-uikit-react");
+                // Dynamically import CometChat UIKit for initialization
+                const module = await import("@cometchat/chat-uikit-react");
+                const { CometChatUIKit, UIKitSettingsBuilder } = module;
+                const CometChatSoundManager = (module as any).CometChatSoundManager;
+
+                // Mute sounds to prevent NotAllowedError (browser autoplay policy)
+                try {
+                    if (CometChatSoundManager) {
+                        CometChatSoundManager.onIncomingMessage = () => { };
+                        CometChatSoundManager.onOutgoingMessage = () => { };
+                        CometChatSoundManager.onIncomingOtherMessage = () => { };
+                        CometChatSoundManager.onIncomingCall = () => { };
+                        CometChatSoundManager.onOutgoingCall = () => { };
+                    }
+                } catch (e) {
+                    console.warn("Could not mute CometChat sounds:", e);
+                }
 
                 // Initialize UIKit (this also initializes the SDK)
                 const UIKitSettings = new UIKitSettingsBuilder()

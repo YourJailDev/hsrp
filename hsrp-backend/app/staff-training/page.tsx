@@ -1,7 +1,6 @@
 "use client";
 
-import "@cometchat/chat-uikit-react/dist/styles/index.css";
-import "@cometchat/chat-uikit-react/dist/styles/css-variables.css";
+import "@cometchat/chat-uikit-react/css-variables.css";
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";

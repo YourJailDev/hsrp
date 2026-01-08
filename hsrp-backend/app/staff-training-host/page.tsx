@@ -119,16 +119,17 @@ export default function StaffTrainingHostPage() {
                     const avatarUrl = user.avatar
                         ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
                         : null;
+                    console.log("DEBUG: Generated Avatar URL:", avatarUrl);
 
                     if (avatarUrl) {
                         const updatedUser = new CometChat.User(user.id);
                         updatedUser.setName(user.username);
                         updatedUser.setAvatar(avatarUrl);
                         try {
-                            await CometChat.updateUser(updatedUser, COMETCHAT_AUTH_KEY);
-                            console.log("User avatar updated");
+                            const updated = await CometChat.updateUser(updatedUser, COMETCHAT_AUTH_KEY);
+                            console.log("DEBUG: User avatar updated successfully:", updated);
                         } catch (e) {
-                            console.log("Failed to update user avatar", e);
+                            console.log("DEBUG: Failed to update user avatar", e);
                         }
                     }
 

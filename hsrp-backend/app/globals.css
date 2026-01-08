@@ -105,6 +105,11 @@ body {
   visibility: visible !important;
 }
 
+/* Hide Avatar as per user request */
+.cometchat-message-bubble__leading-view {
+  display: none !important;
+}
+
 /* Ensure Send Button icon is white */
 .cometchat-message-composer__send-button .cometchat-button__icon {
   background: white !important;

@@ -115,29 +115,6 @@ export default function StaffTrainingHostPage() {
                     await CometChatUIKit.login(user.id);
                     console.log("CometChat login successful");
 
-                    // Sync user details (avatar) for existing users
-                    const avatarUrl = user.avatar
-                        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
-                        : null;
-                    console.log("DEBUG: Generated Avatar URL:", avatarUrl);
-
-                    if (avatarUrl) {
-                        const updatedUser = new CometChat.User(user.id);
-                        updatedUser.setName(user.username);
-                        updatedUser.setAvatar(avatarUrl);
-                        try {
-                            const updated = await CometChat.updateUser(updatedUser, COMETCHAT_AUTH_KEY);
-                            console.log("DEBUG: User avatar updated successfully:", updated);
-
-                            // Force re-login to ensure UI reflects the new avatar immediately
-                            await CometChatUIKit.logout();
-                            await CometChatUIKit.login(user.id);
-                            console.log("DEBUG: Re-login successful to refresh avatar in UI");
-                        } catch (e) {
-                            console.log("DEBUG: Failed to update user avatar", e);
-                        }
-                    }
-
                     // We need to wait a small delay to ensure UI kit is fully ready
                     setTimeout(() => setCometChatReady(true), 1000);
                 } catch (loginErr: any) {

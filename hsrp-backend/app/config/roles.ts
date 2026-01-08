@@ -30,6 +30,8 @@ export const PAGE_PERMISSIONS: Record<string, AdminLevel> = {
   "/loa": AdminLevel.MODERATOR,
   "/server-management": AdminLevel.MODERATOR,
   "/announcements": AdminLevel.DIRECTION_BOARD,
+  "/staff-training": AdminLevel.TRAINEE_MOD,
+  "/staff-training-host": AdminLevel.INTERNAL_AFFAIRS,
 };
 
 // Navigation items with their required permissions
@@ -44,14 +46,14 @@ export const NAV_ITEMS = [
 // Helper function to get admin level from roles
 export function getAdminLevelFromRoles(roleIds: string[]): AdminLevel {
   let highestLevel = AdminLevel.NONE;
-  
+
   for (const roleId of roleIds) {
     const level = ROLE_PERMISSIONS[roleId];
     if (level !== undefined && level > highestLevel) {
       highestLevel = level;
     }
   }
-  
+
   return highestLevel;
 }
 

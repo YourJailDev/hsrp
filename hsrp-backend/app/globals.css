@@ -105,9 +105,20 @@ body {
   visibility: visible !important;
 }
 
-/* Hide Avatar as per user request */
-.cometchat-message-bubble__leading-view {
-  display: none !important;
+
+
+/* Force Name Display */
+.cometchat-message-bubble__header-view {
+  display: flex !important;
+  margin-bottom: 4px !important;
+}
+
+.cometchat-message-bubble__sender-name {
+  display: block !important;
+  color: #9ca3af !important;
+  font-size: 12px !important;
+  margin-bottom: 2px !important;
+  font-weight: 500 !important;
 }
 
 /* Ensure Send Button icon is white */
@@ -124,13 +135,22 @@ body {
   background: white !important;
 }
 
-/* Message Bubble fixes for dark mode */
-.cometchat-message-bubble__content {
-  background-color: #2a2a3e !important;
+/* Message Bubble Styling */
+.cometchat-text-bubble {
+  background-color: #1a1a2e !important;
   color: white !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
 }
 
-.cometchat-message-bubble__sender-name {
-  color: #9ca3af !important;
+/* Outgoing Message Bubble (My messages) - make them blue */
+.cometchat-message-bubble-outgoing .cometchat-text-bubble {
+  background-color: var(--cometchat-primary-color) !important;
+  border: none !important;
+}
+
+/* Incoming Message Bubble (Others) - make them dark card color */
+.cometchat-message-bubble-incoming .cometchat-text-bubble {
+  background-color: #2a2a3e !important;
 }

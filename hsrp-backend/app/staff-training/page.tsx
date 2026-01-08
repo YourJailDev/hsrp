@@ -1,10 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import Sidebar from "../components/Sidebar";
-import { CometChat, AppSettingsBuilder } from "@cometchat/chat-sdk-javascript";
-import { CometChatMessageList } from "@cometchat/chat-uikit-react";
+
+// Dynamically import CometChat components to avoid SSR issues
+const CometChatMessageList = dynamic(
+  () => import("@cometchat/chat-uikit-react").then((mod) => mod.CometChatMessageList),
+  { ssr: false }
+);
 
 // CometChat credentials from environment variables
 const COMETCHAT_APP_ID = process.env.NEXT_PUBLIC_COMETCHAT_APP_ID || "16739610cda03399a";
@@ -27,6 +32,7 @@ export default function StaffTrainingPage() {
   const [group, setGroup] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [cometChatReady, setCometChatReady] = useState(false);
+  const cometChatRef = useRef<any>(null);
 
   // Fetch authenticated user
   useEffect(() => {
@@ -54,6 +60,10 @@ export default function StaffTrainingPage() {
 
     const initCometChat = async () => {
       try {
+        // Dynamically import CometChat SDK to avoid SSR issues
+        const { CometChat, AppSettingsBuilder } = await import("@cometchat/chat-sdk-javascript");
+        cometChatRef.current = CometChat;
+
         const appSettings = new AppSettingsBuilder()
           .subscribePresenceForAllUsers()
           .setRegion(COMETCHAT_REGION)
@@ -98,12 +108,13 @@ export default function StaffTrainingPage() {
       return;
     }
 
-    if (!cometChatReady) {
+    if (!cometChatReady || !cometChatRef.current) {
       setError("Chat system is not ready. Please wait or check configuration.");
       return;
     }
 
     setError(null);
+    const CometChat = cometChatRef.current;
 
     try {
       // Try to fetch existing group
@@ -111,7 +122,7 @@ export default function StaffTrainingPage() {
 
       // Try to join the group if not already a member
       try {
-        await CometChat.joinGroup(sessionId, CometChat.GROUP_TYPE.PUBLIC as CometChat.GroupType, "");
+        await CometChat.joinGroup(sessionId, CometChat.GROUP_TYPE.PUBLIC, "");
       } catch (joinErr: any) {
         // Ignore if already a member
         if (joinErr.code !== "ERR_ALREADY_JOINED") {
@@ -146,9 +157,9 @@ export default function StaffTrainingPage() {
   };
 
   const handleLeave = async () => {
-    if (group) {
+    if (group && cometChatRef.current) {
       try {
-        await CometChat.leaveGroup(group.getGuid());
+        await cometChatRef.current.leaveGroup(group.getGuid());
       } catch (err) {
         console.log("Leave group handled");
       }

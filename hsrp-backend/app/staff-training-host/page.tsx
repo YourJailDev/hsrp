@@ -75,11 +75,18 @@ export default function StaffTrainingHostPage() {
 
         const initCometChat = async () => {
             try {
-                // Dynamically import CometChat SDK to avoid SSR issues
-                const { CometChat, AppSettingsBuilder } = await import("@cometchat/chat-sdk-javascript");
+                // Dynamically import CometChat SDK - use default export for Next.js compatibility
+                const CometChatModule = await import("@cometchat/chat-sdk-javascript");
+                const CometChat = CometChatModule.CometChat || CometChatModule.default?.CometChat || CometChatModule.default;
                 cometChatRef.current = CometChat;
 
-                const appSettings = new AppSettingsBuilder()
+                if (!CometChat || !CometChat.AppSettingsBuilder) {
+                    console.error("CometChat SDK not properly loaded");
+                    setError("Failed to load chat system. Please refresh the page.");
+                    return;
+                }
+
+                const appSettings = new CometChat.AppSettingsBuilder()
                     .subscribePresenceForAllUsers()
                     .setRegion(COMETCHAT_REGION)
                     .build();

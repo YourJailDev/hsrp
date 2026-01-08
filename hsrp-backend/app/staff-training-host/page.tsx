@@ -349,7 +349,7 @@ export default function StaffTrainingHostPage() {
                                         <div className="flex-1 overflow-auto">
                                             <CometChatMessageList group={group} />
                                         </div>
-                                        <div className="border-t border-white/10">
+                                        <div className="border-t border-white/10 p-4 bg-[#0a0a0f]/30">
                                             <CometChatMessageComposer group={group} />
                                         </div>
                                     </>

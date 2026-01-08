@@ -117,6 +117,10 @@ export default function StaffTrainingPage() {
             try {
               await CometChat.updateUser(updatedUser, COMETCHAT_AUTH_KEY);
               console.log("User avatar updated");
+
+              // Force re-login to ensure UI reflects the new avatar immediately
+              await CometChatUIKit.logout();
+              await CometChatUIKit.login(user.id);
             } catch (e) {
               console.log("Failed to update user avatar", e);
             }

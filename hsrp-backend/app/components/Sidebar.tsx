@@ -39,7 +39,7 @@ export default function Sidebar({ user }: SidebarProps) {
           className="rounded-xl"
         />
         <div>
-          <h1 className="text-white font-bold text-sm">HSRP Connect</h1>
+          <h1 className="text-white font-bold text-sm">HSRP</h1>  <h1 className="text-white font-semibold text-sm">Connect</h1>
           <p className="text-gray-500 text-xs">Version 1</p>
         </div>
         {/* Close button for mobile */}

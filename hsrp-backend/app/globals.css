@@ -46,3 +46,47 @@ body {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
+
+/* CometChat UI Kit Overrides */
+:root {
+  --cc-background: #0a0a0f !important;
+  --cc-primary: #3b82f6 !important; /* Blue-500 */
+  --cc-secondary: #1a1a2e !important;
+  --cc-text-color: #ffffff !important;
+  --cc-icon-color: #9ca3af !important; /* Gray-400 */
+  --cc-heading-color: #ffffff !important;
+  --cc-separator-color: #2a2a3e !important;
+  --cc-composer-bg: rgba(255, 255, 255, 0.05) !important;
+  --cc-input-bg: transparent !important;
+  --cc-input-text-color: #ffffff !important;
+  --cc-input-placeholder-color: #6b7280 !important;
+}
+
+/* Force dark mode behavior for specific internal classes if variables don't catch everything */
+.cometchat-message-composer {
+  background-color: transparent !important;
+  border-top: none !important;
+}
+
+/* Ensure Send Button is visible */
+.cometchat-message-composer__action-button svg,
+.cometchat-message-composer-action svg {
+  fill: var(--cc-primary) !important;
+  color: var(--cc-primary) !important;
+  opacity: 1 !important;
+}
+
+/* Ensure input text is white */
+.cometchat-message-composer__input,
+.cometchat-message-composer-input {
+  color: white !important;
+}
+
+/* Message Bubble Styles */
+.cometchat-message-bubble__content {
+  color: white !important;
+}
+
+.cometchat-message-bubble__sender-name {
+  color: #9ca3af !important;
+}

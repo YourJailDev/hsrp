@@ -135,14 +135,19 @@ body {
   background: white !important;
 }
 
-/* Message Bubble Styling */
+/* Message Bubble Styling - Reset all layers to prevent nesting glitches */
 .cometchat-message-bubble-view,
 .cometchat-message-bubble-wrapper,
-.cometchat-message-bubble-content {
+.cometchat-message-bubble-content,
+.cometchat-message-bubble-container,
+.cometchat-message-bubble__content-view,
+.cometchat-text-bubble__container {
   background: transparent !important;
   background-color: transparent !important;
   border: none !important;
   box-shadow: none !important;
+  max-width: none !important;
+  width: auto !important;
 }
 
 .cometchat-message-bubble-view {
@@ -150,33 +155,38 @@ body {
   display: flex !important;
 }
 
+/* Base style for the actual bubble */
 .cometchat-text-bubble {
   color: white !important;
   padding: 10px 14px !important;
   border-radius: 14px !important;
   font-size: 14px !important;
   line-height: 1.5 !important;
-  max-width: 75% !important;
+  width: fit-content !important;
+  max-width: 80% !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
-  overflow-wrap: break-word !important;
-  word-break: break-word !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  white-space: pre-wrap !important;
   position: relative !important;
 }
 
-/* Outgoing Message Bubble (My messages) - make them blue */
+/* Outgoing Message Bubble (My messages) - blue */
 .cometchat-message-bubble-outgoing .cometchat-text-bubble {
   background-color: var(--cometchat-primary-color) !important;
   color: #ffffff !important;
   border: none !important;
   border-bottom-right-radius: 4px !important;
+  margin-left: auto !important;
 }
 
-/* Incoming Message Bubble (Others) - make them gray */
+/* Incoming Message Bubble (Others) - gray */
 .cometchat-message-bubble-incoming .cometchat-text-bubble {
   background-color: #374151 !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-bottom-left-radius: 4px !important;
+  margin-right: auto !important;
 }
 
 /* Ensure child text is also white */
@@ -184,7 +194,7 @@ body {
   color: #ffffff !important;
 }
 
-/* Force specific fix for the "unreadable" dark text in the screenshot */
+/* Force specific fix for text inheritance */
 [class*='cometchat-message-bubble'] [class*='text'],
 [class*='cometchat-message-bubble'] p,
 [class*='cometchat-message-bubble'] span {

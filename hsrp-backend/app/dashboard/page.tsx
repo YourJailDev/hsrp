@@ -10,14 +10,14 @@ export default async function Dashboard() {
       <Sidebar user={user} />
       <main className="flex-1 lg:ml-72 relative overflow-hidden pt-16 lg:pt-0">
         {/* Background with gradient overlay */}
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url('https://cdn.discordapp.com/attachments/1458015184143777802/1458015376259551344/image.png?ex=695e1a22&is=695cc8a2&hm=05888c0918d647b70cb54006fb2cf34ffe9f010ad1e43458860ba27e4576cb08')`,
+            backgroundImage: `url('https://cdn.discordapp.com/attachments/1458014676435599384/1458018803257708715/ChatGPT_Image_Jan_5_2026_10_45_46_PM.png?ex=6960c053&is=695f6ed3&hm=0023748885edd4a47d79c97c7e8db05bbc8501c85e5f661df687cd21086504b1')`,
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/60 via-[#0a0a0f]/40 to-[#0a0a0f]" />
-        
+
         {/* Content */}
         <div className="relative z-10 p-4 sm:p-6 lg:p-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Aloha, {user.username} 🌺</h1>

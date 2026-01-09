@@ -5,6 +5,7 @@ import "@cometchat/chat-uikit-react/css-variables.css";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import Sidebar from "../components/Sidebar";
 import { AdminLevel } from "../config/roles";
 
@@ -233,6 +234,37 @@ export default function StaffTrainingHostPage() {
         }
     };
 
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    // Auto-scroll logic
+    useEffect(() => {
+        const scrollContainer = scrollRef.current;
+        if (!scrollContainer) return;
+
+        const scrollToBottom = () => {
+            scrollContainer.scrollTo({
+                top: scrollContainer.scrollHeight,
+                behavior: "smooth"
+            });
+        };
+
+        // MutationObserver to watch for new messages in the DOM
+        const observer = new MutationObserver(() => {
+            scrollToBottom();
+        });
+
+        observer.observe(scrollContainer, {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+
+        // Initial scroll
+        setTimeout(scrollToBottom, 100);
+
+        return () => observer.disconnect();
+    }, [joined, group]);
+
     const handleLeave = async () => {
         if (group && cometChatRef.current) {
             try {
@@ -265,147 +297,247 @@ export default function StaffTrainingHostPage() {
     }
 
     return (
-        <div className="flex min-h-screen bg-[#0a0a0f]">
+        <div className="flex min-h-screen bg-[#0a0a0f] text-white overflow-hidden">
             <Sidebar user={user || { username: "", avatar: null, id: "", adminLevel: undefined }} />
-            <main className="flex-1 lg:ml-72 relative overflow-hidden pt-16 lg:pt-0">
-                <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/60 via-[#0a0a0f]/40 to-[#0a0a0f]" />
-                <div className="relative z-10 p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center min-h-screen">
 
-                    {/* Configuration Warning */}
-                    {!isCometChatConfigured && (
-                        <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-xl p-4 mb-6 max-w-md w-full">
-                            <p className="text-yellow-400 text-sm text-center">
-                                ⚠️ CometChat is not configured. Please set the following environment variables:
-                            </p>
-                            <ul className="text-yellow-300/80 text-xs mt-2 space-y-1">
-                                <li>• NEXT_PUBLIC_COMETCHAT_APP_ID</li>
-                                <li>• NEXT_PUBLIC_COMETCHAT_REGION</li>
-                                <li>• NEXT_PUBLIC_COMETCHAT_AUTH_KEY</li>
-                            </ul>
-                        </div>
-                    )}
+            {/* Background Image with Overlay */}
+            <div
+                className="fixed inset-0 z-0 bg-cover bg-center pointer-events-none"
+                style={{ backgroundImage: "url('/images/honolulu_sunset_background.png')" }}
+            >
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
+            </div>
+
+            <main className="flex-1 lg:ml-72 relative z-10 overflow-hidden min-h-screen flex flex-col pt-16 lg:pt-0">
+                <div className="p-6 lg:p-12 flex-1 flex flex-col max-h-screen overflow-hidden">
+
+                    {/* Page Header */}
+                    <div className="mb-4">
+                        <h1 className="text-4xl font-bold mb-1">Host Portal</h1>
+                        <p className="text-gray-300 text-sm">Manage and monitor live training sessions</p>
+                    </div>
 
                     {error && (
-                        <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 mb-6 max-w-md w-full">
+                        <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 mb-6 max-w-md w-full shrink-0">
                             <p className="text-red-400 text-sm text-center">{error}</p>
                         </div>
                     )}
 
-                    {success && (
-                        <div className="bg-green-500/20 border border-green-500/50 rounded-xl p-4 mb-6 max-w-md w-full">
-                            <p className="text-green-400 text-sm text-center">{success}</p>
-                        </div>
-                    )}
-
                     {!joined ? (
-                        <div className="bg-[#1a1a2e]/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg w-full max-w-md border border-white/10">
-                            <div className="flex items-center justify-center mb-2">
-                                <span className="bg-purple-500/20 text-purple-400 text-xs font-semibold px-3 py-1 rounded-full border border-purple-500/30">
-                                    IA+ Only
-                                </span>
-                            </div>
-                            <h2 className="text-white text-2xl font-bold mb-2 text-center">Host Training Session</h2>
-                            <p className="text-gray-400 text-sm text-center mb-6">
-                                Create and manage training sessions for staff members
-                            </p>
-
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-gray-300 text-sm mb-2 block">Session Name (Optional)</label>
-                                    <input
-                                        className="w-full px-4 py-3 rounded-xl bg-[#0a0a0f]/50 text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 placeholder:text-gray-500"
-                                        placeholder="e.g., Moderator Training Week 1"
-                                        value={sessionName}
-                                        onChange={e => setSessionName(e.target.value)}
-                                    />
+                        <div className="flex-1 flex flex-col items-center justify-center">
+                            {/* Create/Join Card */}
+                            <div className="bg-black/40 backdrop-blur-xl rounded-3xl p-8 shadow-2xl w-full max-w-md border border-white/10">
+                                <div className="flex items-center justify-center mb-4">
+                                    <span className="bg-purple-500/20 text-purple-400 text-[10px] font-bold px-3 py-1 rounded-full border border-purple-500/30 uppercase tracking-widest">
+                                        Internal Affairs Only
+                                    </span>
                                 </div>
-
-                                <div>
-                                    <label className="text-gray-300 text-sm mb-2 block">Session ID</label>
+                                <h2 className="text-2xl font-bold mb-2 text-center text-white">Classroom Management</h2>
+                                <p className="text-gray-400 text-sm text-center mb-6">
+                                    Enter or generate a training session ID to begin
+                                </p>
+                                <div className="space-y-4">
+                                    <div>
+                                        <input
+                                            className="w-full px-5 py-4 rounded-2xl bg-white/5 text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 placeholder:text-gray-500 transition-all font-medium"
+                                            placeholder="Session Name (Optional)"
+                                            value={sessionName}
+                                            onChange={e => setSessionName(e.target.value)}
+                                        />
+                                    </div>
                                     <div className="flex gap-2">
                                         <input
-                                            className="flex-1 px-4 py-3 rounded-xl bg-[#0a0a0f]/50 text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 placeholder:text-gray-500"
-                                            placeholder="Enter or generate Session ID"
+                                            className="flex-1 px-5 py-4 rounded-2xl bg-white/5 text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 placeholder:text-gray-500 transition-all font-mono"
+                                            placeholder="Enter Session ID"
                                             value={sessionId}
                                             onChange={e => setSessionId(e.target.value)}
                                         />
                                         <button
                                             onClick={generateSessionId}
-                                            className="px-4 py-3 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30 transition-all"
-                                            title="Generate ID"
+                                            className="aspect-square bg-purple-500 text-white rounded-2xl flex items-center justify-center hover:bg-purple-600 transition-all shadow-lg"
+                                            title="Generate Session ID"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                             </svg>
                                         </button>
                                     </div>
+                                    <button
+                                        onClick={handleCreateSession}
+                                        disabled={!isCometChatConfigured || !cometChatReady}
+                                        className="w-full py-4 rounded-2xl font-bold transition-all bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_20px_rgba(147,51,234,0.3)] disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                                    >
+                                        {cometChatReady ? "Create & Join Classroom" : "Connecting..."}
+                                    </button>
                                 </div>
-
-                                <button
-                                    onClick={handleCreateSession}
-                                    disabled={!isCometChatConfigured || !cometChatReady}
-                                    className="w-full py-3 rounded-xl font-semibold transition-all bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {cometChatReady ? "Create & Join Session" : "Connecting..."}
-                                </button>
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-[#1a1a2e]/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg w-full max-w-4xl border border-white/10 flex flex-col" style={{ height: "80vh" }}>
-                            <div className="flex items-center justify-between mb-4">
-                                <div>
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <h2 className="text-white text-xl font-bold">
-                                            {sessionName || "Training Session"}
-                                        </h2>
-                                        <span className="bg-purple-500/20 text-purple-400 text-xs font-semibold px-2 py-0.5 rounded-full border border-purple-500/30">
-                                            Host
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <p className="text-gray-400 text-sm">Session ID: {sessionId}</p>
+                        <div className="flex-1 flex flex-col min-h-0">
+                            {/* Host Classroom Card */}
+                            <div className="bg-black/30 backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-2xl flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
+
+                                {/* Main Content Area */}
+                                <div className="flex-1 flex flex-col border-r border-white/10 min-h-0">
+
+                                    {/* Classroom Header */}
+                                    <div className="p-6 border-b border-white/10 flex items-center justify-between shrink-0">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="bg-red-500 h-2 w-2 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
+                                                <span className="text-red-500 text-[10px] font-bold uppercase tracking-wider">Host Mode</span>
+                                                <span className="text-white font-bold ml-2">{sessionName || "Training Session"}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="bg-purple-500/20 text-purple-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-purple-500/30 flex items-center gap-1.5">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                                                    Session ID: {sessionId}
+                                                </div>
+                                                <button
+                                                    onClick={copySessionId}
+                                                    className="text-gray-500 hover:text-white transition-colors"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
                                         <button
-                                            onClick={copySessionId}
-                                            className="text-purple-400 hover:text-purple-300 transition-colors"
-                                            title="Copy Session ID"
+                                            onClick={handleLeave}
+                                            className="px-4 py-2 rounded-xl text-xs font-bold bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 transition-all"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-                                                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
-                                            </svg>
+                                            End Session
                                         </button>
                                     </div>
-                                </div>
-                                <button
-                                    onClick={handleLeave}
-                                    className="px-4 py-2 rounded-xl text-sm font-medium bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 transition-all"
-                                >
-                                    End Session
-                                </button>
-                            </div>
-                            <div className="flex-1 rounded-xl overflow-hidden bg-[#0a0a0f]/50 flex flex-col">
-                                {group ? (
-                                    <>
-                                        <div className="flex-1 min-h-0 relative">
-                                            <CometChatMessageList
-                                                group={group}
-                                                scrollToBottomOnNewMessages={true}
-                                            />
+
+                                    {/* Chat Info Area */}
+                                    <div className="p-4 px-6 flex items-center gap-4 bg-white/5 shrink-0">
+                                        <Image
+                                            src="https://images-ext-1.discordapp.net/external/zHtYuWHJ4jcw2EiyELgUy7WaF2oWpO8br0FmBzgJa2c/%3Fsize%3D512/https/cdn.discordapp.com/icons/1441821616186196191/8db10a79e33d3388a413c6d3989385e8.png?format=webp&quality=lossless&width=160&height=160"
+                                            alt="Avatar"
+                                            width={44}
+                                            height={44}
+                                            className="rounded-2xl"
+                                        />
+                                        <div className="flex-1">
+                                            <h3 className="font-bold text-base">{sessionName || "HSRP Training"}</h3>
+                                            <p className="text-purple-400 text-xs">Principal Host: {user?.username}</p>
                                         </div>
-                                        <div className="border-t border-white/10 p-4 bg-[#0a0a0f]/30">
-                                            <CometChatMessageComposer group={group} />
+                                        <div className="flex -space-x-2">
+                                            {[1, 2, 3, 4].map(i => (
+                                                <div key={i} className="w-8 h-8 rounded-full border-2 border-[#1a1a2e] bg-gray-800 flex items-center justify-center text-[10px] font-bold">
+                                                    {i}
+                                                </div>
+                                            ))}
                                         </div>
-                                    </>
-                                ) : (
-                                    <div className="flex items-center justify-center h-full">
-                                        <div className="text-gray-400">Loading chat...</div>
                                     </div>
-                                )}
+
+                                    {/* Chat Area */}
+                                    <div className="flex-1 flex flex-col min-h-0 bg-transparent custom-cometchat overflow-hidden">
+                                        {group ? (
+                                            <>
+                                                <div
+                                                    ref={scrollRef}
+                                                    className="flex-1 overflow-y-auto px-6 py-4 scrollbar-hide chat-scroll-container"
+                                                >
+                                                    <CometChatMessageList
+                                                        group={group}
+                                                        scrollToBottomOnNewMessages={true}
+                                                    />
+                                                </div>
+                                                <div className="p-6 border-t border-white/10 shrink-0">
+                                                    <div className="bg-white/5 rounded-2xl border border-white/10 p-1">
+                                                        <CometChatMessageComposer group={group} />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="flex-1 flex items-center justify-center">
+                                                <div className="flex flex-col items-center gap-3">
+                                                    <div className="w-10 h-10 border-3 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                                                    <p className="text-gray-400 text-sm font-medium">Entering classroom...</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
+
+                    {/* Footer */}
+                    <footer className="py-4 text-center shrink-0">
+                        <p className="text-gray-600 text-[10px]">© 2024 Honolulu State Roleplay ~ Staff Portal built with Aloha</p>
+                    </footer>
                 </div>
             </main>
+
+            <style jsx global>{`
+                /* CometChat Bubble Fixes */
+                .custom-cometchat .comet-chat-message-list {
+                    background: transparent !important;
+                }
+                
+                /* Fix for vertical text/narrow bubbles */
+                .custom-cometchat div[class*="comet-chat-message-bubble"] {
+                    max-width: 85% !important;
+                    min-width: 60px !important;
+                    width: auto !important;
+                    word-wrap: break-word !important;
+                    white-space: pre-wrap !important;
+                    display: inline-block !important;
+                    height: auto !important;
+                }
+
+                .custom-cometchat div[class*="comet-chat-message-bubble__text"] {
+                    width: 100% !important;
+                    display: block !important;
+                    word-break: break-word !important;
+                    line-height: 1.5 !important;
+                }
+
+                /* Ensure parent containers don't restrict width */
+                .custom-cometchat div[class*="comet-chat-message-list__message-item"] {
+                    width: 100% !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                }
+
+                .custom-cometchat .comet-chat-message-composer {
+                    background: transparent !important;
+                    border: none !important;
+                }
+                .custom-cometchat .comet-chat-message-composer__input {
+                    color: white !important;
+                }
+                .custom-cometchat .comet-chat-message-composer__send-button {
+                    background: #9333ea !important;
+                    border-radius: 12px !important;
+                    padding: 8px 16px !important;
+                }
+                
+                /* Scrollbar Styles */
+                .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                }
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 4px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: rgba(255, 255, 255, 0.1);
+                    border-radius: 10px;
+                }
+                
+                /* Auto-scroll helper */
+                .chat-scroll-container > div {
+                    display: flex;
+                    flex-direction: column;
+                }
+            `}</style>
         </div>
     );
 }

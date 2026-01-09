@@ -40,6 +40,7 @@ export default function StaffTrainingPage() {
   const [group, setGroup] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [cometChatReady, setCometChatReady] = useState(false);
+  const [members, setMembers] = useState<any[]>([]);
   const cometChatRef = useRef<any>(null);
 
   // Fetch authenticated user
@@ -191,6 +192,7 @@ export default function StaffTrainingPage() {
 
       setGroup(fetchedGroup);
       setJoined(true);
+      fetchMembers(sessionId);
     } catch (err: any) {
       // If group doesn't exist, create it
       if (err.code === "ERR_GUID_NOT_FOUND") {
@@ -204,6 +206,7 @@ export default function StaffTrainingPage() {
           const createdGroup = await CometChat.createGroup(newGroup);
           setGroup(createdGroup);
           setJoined(true);
+          fetchMembers(sessionId);
         } catch (createErr) {
           console.error("Failed to create group:", createErr);
           setError("Failed to create training session. Please try again.");
@@ -214,6 +217,59 @@ export default function StaffTrainingPage() {
       }
     }
   };
+
+  const fetchMembers = async (guid: string) => {
+    if (!cometChatRef.current) return;
+    const CometChat = cometChatRef.current;
+    try {
+      const membersRequest = new CometChat.GroupMembersRequestBuilder(guid)
+        .setLimit(30)
+        .build();
+      const memberList = await membersRequest.fetchNext();
+      setMembers(memberList);
+    } catch (err) {
+      console.error("Failed to fetch group members:", err);
+    }
+  };
+
+  // Add CometChat listeners for real-time updates
+  useEffect(() => {
+    if (!joined || !group || !cometChatRef.current) return;
+
+    const CometChat = cometChatRef.current;
+    const listenerID = `training_${group.getGuid()}_${Date.now()}`;
+
+    CometChat.addGroupListener(
+      listenerID,
+      new CometChat.GroupListener({
+        onGroupMemberJoined: (message: any, joinedUser: any, joinedGroup: any) => {
+          if (joinedGroup.getGuid() === group.getGuid()) {
+            setMembers(prev => {
+              if (prev.find(m => m.uid === joinedUser.uid)) return prev;
+              return [...prev, joinedUser];
+            });
+          }
+        },
+        onGroupMemberLeft: (message: any, leftUser: any, leftGroup: any) => {
+          if (leftGroup.getGuid() === group.getGuid()) {
+            setMembers(prev => prev.filter(m => m.uid !== leftUser.uid));
+          }
+        },
+        onGroupMemberKicked: (message: any, kickedUser: any, kickedBy: any, kickedGroup: any) => {
+          if (kickedGroup.getGuid() === group.getGuid()) {
+            setMembers(prev => prev.filter(m => m.uid !== kickedUser.uid));
+            if (kickedUser.uid === user?.id) {
+              handleLeave();
+            }
+          }
+        }
+      })
+    );
+
+    return () => {
+      CometChat.removeGroupListener(listenerID);
+    };
+  }, [joined, group, user?.id]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -274,16 +330,16 @@ export default function StaffTrainingPage() {
     <div className="flex min-h-screen bg-[#0a0a0f] text-white overflow-hidden">
       <Sidebar user={user || { username: "", avatar: null, id: "", adminLevel: undefined }} />
 
-      {/* Background Image with Overlay */}
-      <div
-        className="fixed inset-0 z-0 bg-cover bg-center pointer-events-none"
-        style={{ backgroundImage: "url('/images/honolulu_sunset_background.png')" }}
-      >
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
-      </div>
-
       <main className="flex-1 lg:ml-72 relative z-10 overflow-hidden min-h-screen flex flex-col pt-16 lg:pt-0">
-        <div className="p-6 lg:p-12 flex-1 flex flex-col max-h-screen overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div
+          className="absolute inset-0 z-0 bg-cover bg-center pointer-events-none"
+          style={{ backgroundImage: "url('/images/honolulu_sunset_background.png')" }}
+        >
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
+        </div>
+
+        <div className="p-6 lg:p-12 flex-1 flex flex-col max-h-screen overflow-hidden relative z-10">
 
           {/* Page Header */}
           <div className="mb-4">
@@ -331,12 +387,14 @@ export default function StaffTrainingPage() {
                       <div className="flex items-center gap-2 mb-1">
                         <span className="bg-red-500 h-2 w-2 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
                         <span className="text-red-500 text-[10px] font-bold uppercase tracking-wider">Live</span>
-                        <span className="text-white font-bold ml-2">Supervisor Maui's Classroom</span>
+                        <span className="text-white font-bold ml-2">
+                          {members.find(m => m.uid === group?.owner)?.name || "Training"}'s Classroom
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="bg-green-500/20 text-green-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-green-500/30 flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                          Now Hosting
+                          {group?.owner === user?.id ? "Hosting" : "Now Attending"}
                         </div>
                       </div>
                     </div>
@@ -358,13 +416,19 @@ export default function StaffTrainingPage() {
                       className="rounded-2xl"
                     />
                     <div>
-                      <h3 className="font-bold text-base">Moderation Training</h3>
-                      <p className="text-blue-400 text-xs">Hosted by Supervisor Maui</p>
+                      <h3 className="font-bold text-base">{group?.name || "Moderation Training"}</h3>
+                      <p className="text-blue-400 text-xs">Hosted by {members.find(m => m.uid === group?.owner)?.name || "Staff"}</p>
                     </div>
                     <div className="ml-auto flex -space-x-2">
-                      {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="w-6 h-6 rounded-full border-2 border-[#1a1a2e] bg-gray-600 overflow-hidden">
-                          <div className="w-full h-full bg-linear-to-br from-blue-400 to-purple-400" />
+                      {members.slice(0, 4).map(member => (
+                        <div key={member.uid} className="w-6 h-6 rounded-full border-2 border-[#1a1a2e] bg-gray-600 overflow-hidden relative">
+                          {member.avatar ? (
+                            <Image src={member.avatar} alt={member.name} fill className="object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-linear-to-br from-blue-400 to-purple-400 flex items-center justify-center text-[8px] font-bold">
+                              {member.name.charAt(0)}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -406,17 +470,26 @@ export default function StaffTrainingPage() {
                     <h3 className="font-bold text-sm">Who's Here</h3>
                   </div>
                   <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
-                    {/* Mock participants to match image */}
-                    <ParticipantItem name="Supervisor Maui" role="HOST" isHost />
-                    <div className="h-4" />
-                    <ParticipantItem name="Moderator Kai" role="MOD" holds />
-                    <ParticipantItem name="Leilani" role="MOD" />
-                    <ParticipantItem name="Ethan" role="MOD" holds />
-                    <ParticipantItem name="James" />
-                    <ParticipantItem name="Koa" />
-                    <ParticipantItem name="Officer Koa" holds />
-                    <ParticipantItem name="Aidan" />
-                    <ParticipantItem name="Rachel" />
+                    {members.length > 0 ? (
+                      members.sort((a, b) => {
+                        // Put host at the top
+                        if (a.uid === group?.owner) return -1;
+                        if (b.uid === group?.owner) return 1;
+                        return 0;
+                      }).map((member) => (
+                        <ParticipantItem
+                          key={member.uid}
+                          name={member.name}
+                          avatar={member.avatar}
+                          role={member.uid === group?.owner ? "HOST" : (member.scope !== "participant" ? "MOD" : undefined)}
+                          isHost={member.uid === group?.owner}
+                        />
+                      ))
+                    ) : (
+                      <div className="p-4 text-center text-gray-500 text-xs italic">
+                        No participants found
+                      </div>
+                    )}
                   </div>
                   <div className="p-4 border-t border-white/10 text-center shrink-0">
                     <p className="text-gray-500 text-[9px] uppercase tracking-widest font-bold">Staff Portal built with Aloha</p>
@@ -501,15 +574,23 @@ export default function StaffTrainingPage() {
   );
 }
 
-function ParticipantItem({ name, role, isHost, holds }: { name: string; role?: string; isHost?: boolean; holds?: boolean }) {
+function ParticipantItem({ name, avatar, role, isHost, holds }: { name: string; avatar?: string; role?: string; isHost?: boolean; holds?: boolean }) {
   return (
     <div className={`flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5 ${isHost ? 'bg-white/5 border border-white/10' : ''}`}>
       <div className="relative">
-        <div className="w-8 h-8 rounded-lg bg-gray-700 overflow-hidden">
-          {/* Mock avatar */}
-          <div className="w-full h-full bg-linear-to-br from-blue-500 to-purple-500 flex items-center justify-center text-[10px] font-bold">
-            {name.charAt(0)}
-          </div>
+        <div className="w-8 h-8 rounded-lg bg-gray-700 overflow-hidden relative">
+          {avatar ? (
+            <Image
+              src={avatar}
+              alt={name}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-linear-to-br from-blue-500 to-purple-500 flex items-center justify-center text-[10px] font-bold">
+              {name.charAt(0)}
+            </div>
+          )}
         </div>
         <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-[#0a0a0f]" />
       </div>

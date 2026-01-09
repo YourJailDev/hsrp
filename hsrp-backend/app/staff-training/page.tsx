@@ -511,23 +511,40 @@ export default function StaffTrainingPage() {
           background: transparent !important;
         }
 
-        /* Fix for vertical text/narrow bubbles */
-        .custom-cometchat div[class*="comet-chat-message-bubble"] {
-            max-width: 85% !important;
-            min-width: 60px !important;
-            width: auto !important;
-            word-wrap: break-word !important;
-            white-space: pre-wrap !important;
-            display: inline-block !important;
-            height: auto !important;
-        }
+                /* Fix for vertical text/narrow bubbles - Ultra Aggressive */
+                .custom-cometchat [class*="message-bubble"] {
+                    max-width: 85% !important;
+                    min-width: 80px !important;
+                    width: auto !important;
+                    display: inline-block !important;
+                    word-wrap: break-word !important;
+                    white-space: normal !important;
+                    height: auto !important;
+                }
 
-        .custom-cometchat div[class*="comet-chat-message-bubble__text"] {
-            width: 100% !important;
-            display: block !important;
-            word-break: break-word !important;
-            line-height: 1.5 !important;
-        }
+                .custom-cometchat [class*="message-bubble"] [class*="text"] {
+                    display: block !important;
+                    width: auto !important;
+                    word-break: break-word !important;
+                    white-space: pre-wrap !important;
+                    line-height: 1.4 !important;
+                }
+
+                .custom-cometchat [class*="message-bubble"] * {
+                    white-space: normal !important;
+                    overflow-wrap: break-word !important;
+                }
+
+                /* Dark mode for incoming bubbles */
+                .custom-cometchat [class*="message-bubble--incoming"] {
+                    background: rgba(0, 0, 0, 0.6) !important;
+                    backdrop-filter: blur(8px) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                }
+
+                .custom-cometchat [class*="message-bubble--incoming"] [class*="text"] {
+                    color: white !important;
+                }
 
         /* Ensure parent containers don't restrict width */
         .custom-cometchat div[class*="comet-chat-message-list__message-item"] {

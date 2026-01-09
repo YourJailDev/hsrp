@@ -304,10 +304,17 @@ export default function StaffTrainingPage() {
 
   const handleLeave = async () => {
     if (group && cometChatRef.current) {
+      const CometChat = cometChatRef.current;
       try {
-        await cometChatRef.current.leaveGroup(group.getGuid());
+        // Only attempt to leave if group still exists (not already deleted by host)
+        try {
+          await CometChat.getGroup(group.getGuid());
+          await CometChat.leaveGroup(group.getGuid());
+        } catch (e) {
+          // Group might be already deleted or user already left
+        }
       } catch (err) {
-        console.log("Leave group handled");
+        console.log("Leave group error handled");
       }
     }
     setJoined(false);
@@ -331,13 +338,12 @@ export default function StaffTrainingPage() {
       <Sidebar user={user || { username: "", avatar: null, id: "", adminLevel: undefined }} />
 
       <main className="flex-1 lg:ml-72 relative z-10 overflow-hidden min-h-screen flex flex-col pt-16 lg:pt-0">
-        {/* Background Image with Overlay */}
+        {/* Background Image with Gradient Overlay */}
         <div
-          className="absolute inset-0 z-0 bg-cover bg-center pointer-events-none"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
           style={{ backgroundImage: "url('/images/honolulu_sunset_background.png')" }}
-        >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
-        </div>
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/60 via-[#0a0a0f]/40 to-[#0a0a0f] pointer-events-none" />
 
         <div className="p-6 lg:p-12 flex-1 flex flex-col max-h-screen overflow-hidden relative z-10">
 
@@ -350,9 +356,9 @@ export default function StaffTrainingPage() {
           {!joined ? (
             <div className="flex-1 flex flex-col items-center justify-center">
               {/* Join Card */}
-              <div className="bg-black/40 backdrop-blur-xl rounded-3xl p-8 shadow-2xl w-full max-w-md border border-white/10">
-                <h2 className="text-2xl font-bold mb-2 text-center">Classroom Access</h2>
-                <p className="text-gray-400 text-sm text-center mb-6">
+              <div className="bg-[#1a1a2e]/80 backdrop-blur-sm rounded-2xl p-8 shadow-2xl w-full max-w-md border border-white/5">
+                <h2 className="text-2xl font-bold mb-2 text-center text-white">Classroom Access</h2>
+                <p className="text-gray-400 text-sm text-center mb-6 px-4">
                   Enter a session ID to join your assigned training room
                 </p>
                 <div className="space-y-4">
@@ -376,7 +382,7 @@ export default function StaffTrainingPage() {
           ) : (
             <div className="flex-1 flex flex-col min-h-0">
               {/* Classroom Card */}
-              <div className="bg-black/30 backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-2xl flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
+              <div className="bg-[#1a1a2e]/50 backdrop-blur-sm rounded-2xl border border-white/5 shadow-2xl flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
 
                 {/* Main Content Area */}
                 <div className="flex-1 flex flex-col border-r border-white/10 min-h-0">

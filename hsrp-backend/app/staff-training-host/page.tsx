@@ -323,10 +323,18 @@ export default function StaffTrainingHostPage() {
 
     const handleLeave = async () => {
         if (group && cometChatRef.current) {
+            const CometChat = cometChatRef.current;
             try {
-                await cometChatRef.current.leaveGroup(group.getGuid());
+                // If the user is the owner, delete the group to "end" the session for everyone
+                if (group.getOwner() === user?.id) {
+                    await CometChat.deleteGroup(group.getGuid());
+                    console.log("Session ended and group deleted by host");
+                } else {
+                    await CometChat.leaveGroup(group.getGuid());
+                    console.log("Left group");
+                }
             } catch (err) {
-                console.log("Leave group handled");
+                console.error("Error during leave/end session:", err);
             }
         }
         setJoined(false);
@@ -357,13 +365,12 @@ export default function StaffTrainingHostPage() {
             <Sidebar user={user || { username: "", avatar: null, id: "", adminLevel: undefined }} />
 
             <main className="flex-1 lg:ml-72 relative z-10 overflow-hidden min-h-screen flex flex-col pt-16 lg:pt-0">
-                {/* Background Image with Overlay */}
+                {/* Background Image with Gradient Overlay */}
                 <div
-                    className="absolute inset-0 z-0 bg-cover bg-center pointer-events-none"
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
                     style={{ backgroundImage: "url('/images/honolulu_sunset_background.png')" }}
-                >
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
-                </div>
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/60 via-[#0a0a0f]/40 to-[#0a0a0f] pointer-events-none" />
 
                 <div className="p-6 lg:p-12 flex-1 flex flex-col max-h-screen overflow-hidden relative z-10">
 
@@ -382,7 +389,7 @@ export default function StaffTrainingHostPage() {
                     {!joined ? (
                         <div className="flex-1 flex flex-col items-center justify-center">
                             {/* Create/Join Card */}
-                            <div className="bg-black/40 backdrop-blur-xl rounded-3xl p-8 shadow-2xl w-full max-w-md border border-white/10">
+                            <div className="bg-[#1a1a2e]/80 backdrop-blur-sm rounded-2xl p-8 shadow-2xl w-full max-w-md border border-white/5">
                                 <div className="flex items-center justify-center mb-4">
                                     <span className="bg-purple-500/20 text-purple-400 text-[10px] font-bold px-3 py-1 rounded-full border border-purple-500/30 uppercase tracking-widest">
                                         Internal Affairs Only
@@ -431,7 +438,7 @@ export default function StaffTrainingHostPage() {
                     ) : (
                         <div className="flex-1 flex flex-col min-h-0">
                             {/* Host Classroom Card */}
-                            <div className="bg-black/30 backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-2xl flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
+                            <div className="bg-[#1a1a2e]/50 backdrop-blur-sm rounded-2xl border border-white/5 shadow-2xl flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
 
                                 {/* Main Content Area */}
                                 <div className="flex-1 flex flex-col border-r border-white/10 min-h-0">

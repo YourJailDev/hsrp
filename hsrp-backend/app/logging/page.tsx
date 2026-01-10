@@ -12,7 +12,7 @@ interface User {
 }
 
 interface LogEntry {
-    id: string;
+    _id?: string;
     user: {
         name: string;
         avatar: string | null;
@@ -20,55 +20,14 @@ interface LogEntry {
     action: string;
     notes: string;
     timestamp: string;
-    type: "warn" | "kick" | "ban" | "other";
+    type: string;
 }
-
-const MOCK_LOGS: LogEntry[] = [
-    {
-        id: "1",
-        user: { name: "Kian Takahashi", avatar: null },
-        action: "Submitted Infraction Report",
-        notes: "Infraction against Alex Riker: Failure to value life (RDM).",
-        timestamp: "3m ago",
-        type: "other",
-    },
-    {
-        id: "2",
-        user: { name: "Lei Keona'Oka", avatar: null },
-        action: "Issued a kick to 'BigMaui98'",
-        notes: "BigMaui98 was kicked for AFK in active RP scene.",
-        timestamp: "1 hour ago",
-        type: "kick",
-    },
-    {
-        id: "3",
-        user: { name: "Officer Kai", avatar: null },
-        action: "Updated rank of Officer Sam",
-        notes: "Officer Sam promoted to Senior Officer.",
-        timestamp: "3 hours ago",
-        type: "other",
-    },
-    {
-        id: "4",
-        user: { name: "Detective Nukumo", avatar: null },
-        action: "Edited training session",
-        notes: "Moderation Level 1 training updated.",
-        timestamp: "4 hours ago",
-        type: "other",
-    },
-    {
-        id: "5",
-        user: { name: "Olivia", avatar: null },
-        action: "Updated rookieguy99's call sign",
-        notes: "Call sign changed to 3X10.",
-        timestamp: "7 hours ago",
-        type: "other",
-    },
-];
 
 export default function LoggingPage() {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [logs, setLogs] = useState<LogEntry[]>([]);
+    const [logsLoading, setLogsLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [filterMember, setFilterMember] = useState("Any Member");
@@ -76,11 +35,26 @@ export default function LoggingPage() {
 
     // Form state for new log
     const [newLog, setNewLog] = useState({
-        user: "",
+        targetUser: "",
         type: "Warn",
         reason: "",
         description: "",
     });
+
+    const fetchLogs = async () => {
+        setLogsLoading(true);
+        try {
+            const res = await fetch("/api/logs");
+            if (res.ok) {
+                const data = await res.json();
+                setLogs(data);
+            }
+        } catch (err) {
+            console.error("Failed to fetch logs:", err);
+        } finally {
+            setLogsLoading(false);
+        }
+    };
 
     useEffect(() => {
         async function fetchUser() {
@@ -89,6 +63,7 @@ export default function LoggingPage() {
                 if (res.ok) {
                     const userData = await res.json();
                     setUser(userData);
+                    fetchLogs();
                 } else {
                     window.location.href = "/";
                 }
@@ -100,6 +75,66 @@ export default function LoggingPage() {
         }
         fetchUser();
     }, []);
+
+    const handleCreateLog = async () => {
+        if (!newLog.targetUser || !newLog.reason) return;
+
+        try {
+            const res = await fetch("/api/logs", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newLog),
+            });
+
+            if (res.ok) {
+                setShowCreateModal(false);
+                setNewLog({ targetUser: "", type: "Warn", reason: "", description: "" });
+                fetchLogs();
+            }
+        } catch (err) {
+            console.error("Failed to create log:", err);
+        }
+    };
+
+    const filteredLogs = logs.filter(log => {
+        const matchesSearch = log.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            log.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            log.action.toLowerCase().includes(searchQuery.toLowerCase());
+
+        // Basic filtering logic
+        let matchesMember = true;
+        if (filterMember === "Staff Only") {
+            // This would ideally check staff status but for now we follow mock UI
+        }
+
+        return matchesSearch && matchesMember;
+    });
+
+    const stats = {
+        total: logs.length,
+        actions: logs.filter(l => l.type === 'other' || !['warn', 'kick', 'ban'].includes(l.type)).length,
+        infractions: logs.filter(l => l.type === 'warn').length,
+        punishments: logs.filter(l => ['kick', 'ban'].includes(l.type)).length
+    };
+
+    const formatTimestamp = (ts: string) => {
+        try {
+            const date = new Date(ts);
+            const now = new Date();
+            const diffMs = now.getTime() - date.getTime();
+            const diffMins = Math.round(diffMs / 60000);
+
+            if (diffMins < 1) return "Just now";
+            if (diffMins < 60) return `${diffMins}m ago`;
+
+            const diffHours = Math.round(diffMins / 60);
+            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+
+            return date.toLocaleDateString();
+        } catch (e) {
+            return ts;
+        }
+    };
 
     if (loading || !user) {
         return (
@@ -178,10 +213,10 @@ export default function LoggingPage() {
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <StatCard label="New Logs" value="328" color="blue" />
-                        <StatCard label="Actions Logged" value="176" color="emerald" />
-                        <StatCard label="Infractions" value="22" color="amber" />
-                        <StatCard label="User Kicks / Bans" value="15" color="rose" />
+                        <StatCard label="Total Logs" value={stats.total.toString()} color="blue" />
+                        <StatCard label="Actions Logged" value={stats.actions.toString()} color="emerald" />
+                        <StatCard label="Infractions" value={stats.infractions.toString()} color="amber" />
+                        <StatCard label="User Kicks / Bans" value={stats.punishments.toString()} color="rose" />
                     </div>
 
                     {/* Logs Table Container */}
@@ -189,7 +224,7 @@ export default function LoggingPage() {
                         <div className="p-4 border-b border-white/10 flex items-center justify-between shrink-0">
                             <h2 className="font-bold text-lg px-2">Logging</h2>
                             <div className="flex items-center gap-4">
-                                <p className="text-gray-500 text-xs hidden sm:block">Showing 1-10 of 335 results</p>
+                                <p className="text-gray-500 text-xs hidden sm:block">Showing {filteredLogs.length} of {logs.length} results</p>
                                 <div className="flex gap-1">
                                     <button className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all text-gray-400">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,8 +232,6 @@ export default function LoggingPage() {
                                         </svg>
                                     </button>
                                     <button className="w-8 h-8 rounded-lg bg-blue-600 border border-blue-500/50 flex items-center justify-center text-xs font-bold">1</button>
-                                    <button className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all text-xs font-bold text-gray-400">2</button>
-                                    <button className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all text-xs font-bold text-gray-400">3</button>
                                     <button className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all text-gray-400">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -209,53 +242,59 @@ export default function LoggingPage() {
                         </div>
 
                         <div className="flex-1 overflow-auto custom-scrollbar">
-                            <table className="w-full text-left border-collapse min-w-[800px]">
-                                <thead>
-                                    <tr className="border-b border-white/5 bg-white/[0.02]">
-                                        <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-wider text-gray-500">User</th>
-                                        <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-wider text-gray-500">Action</th>
-                                        <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-wider text-gray-500">Notes</th>
-                                        <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-wider text-gray-500">Timestamp</th>
-                                        <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-wider text-gray-500 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/5">
-                                    {MOCK_LOGS.map((log) => (
-                                        <tr key={log.id} className="hover:bg-white/[0.03] transition-colors group">
-                                            <td className="py-4 px-6">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold text-white shadow-[0_0_10px_rgba(37,99,235,0.3)]">
-                                                        {log.user.name.charAt(0)}
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-bold text-white mb-0.5">{log.user.name}</p>
-                                                        <p className="text-[10px] text-gray-500 uppercase tracking-tighter">3 MINS AGO</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="py-4 px-6">
-                                                <p className="text-sm font-medium text-gray-200">{log.action}</p>
-                                            </td>
-                                            <td className="py-4 px-6">
-                                                <div className="flex items-start gap-3 max-w-sm">
-                                                    <div className={`mt-0.5 shrink-0 w-6 h-6 rounded-lg flex items-center justify-center ${log.type === 'kick' ? 'bg-amber-500/20 text-amber-500' : 'bg-green-500/20 text-green-500'}`}>
-                                                        {log.type === 'kick' ? '⚠️' : '🛡️'}
-                                                    </div>
-                                                    <p className="text-xs text-gray-400 leading-relaxed italic line-clamp-2">{log.notes}</p>
-                                                </div>
-                                            </td>
-                                            <td className="py-4 px-6">
-                                                <p className="text-xs text-gray-500 font-medium">{log.timestamp}</p>
-                                            </td>
-                                            <td className="py-4 px-6 text-right">
-                                                <button className="bg-white/5 hover:bg-white/10 border border-white/5 px-4 py-1.5 rounded-lg text-xs font-bold text-gray-300 transition-all group-hover:border-blue-500/30 group-hover:text-blue-400">
-                                                    View Infraction
-                                                </button>
-                                            </td>
+                            {logsLoading ? (
+                                <div className="p-12 text-center text-gray-500 italic">Syncing with database...</div>
+                            ) : filteredLogs.length === 0 ? (
+                                <div className="p-12 text-center text-gray-500 italic">No results found for your search.</div>
+                            ) : (
+                                <table className="w-full text-left border-collapse min-w-[800px]">
+                                    <thead>
+                                        <tr className="border-b border-white/5 bg-white/[0.02]">
+                                            <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-wider text-gray-500">User</th>
+                                            <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-wider text-gray-500">Action</th>
+                                            <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-wider text-gray-500">Notes</th>
+                                            <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-wider text-gray-500">Timestamp</th>
+                                            <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-wider text-gray-500 text-right">Actions</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {filteredLogs.map((log) => (
+                                            <tr key={log._id || log.timestamp} className="hover:bg-white/[0.03] transition-colors group">
+                                                <td className="py-4 px-6">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold text-white shadow-[0_0_10px_rgba(37,99,235,0.3)]">
+                                                            {log.user.name.charAt(0)}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-bold text-white mb-0.5">{log.user.name}</p>
+                                                            <p className="text-[10px] text-gray-500 uppercase tracking-tighter">{formatTimestamp(log.timestamp)}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    <p className="text-sm font-medium text-gray-200">{log.action}</p>
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    <div className="flex items-start gap-3 max-w-sm">
+                                                        <div className={`mt-0.5 shrink-0 w-6 h-6 rounded-lg flex items-center justify-center ${['kick', 'ban'].includes(log.type) ? 'bg-amber-500/20 text-amber-500' : (log.type === 'warn' ? 'bg-rose-500/20 text-rose-500' : 'bg-green-500/20 text-green-500')}`}>
+                                                            {['kick', 'ban'].includes(log.type) ? '⚠️' : (log.type === 'warn' ? '🚨' : '🛡️')}
+                                                        </div>
+                                                        <p className="text-xs text-gray-400 leading-relaxed italic line-clamp-2">{log.notes}</p>
+                                                    </div>
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    <p className="text-xs text-gray-500 font-medium">{new Date(log.timestamp).toLocaleString()}</p>
+                                                </td>
+                                                <td className="py-4 px-6 text-right">
+                                                    <button className="bg-white/5 hover:bg-white/10 border border-white/5 px-4 py-1.5 rounded-lg text-xs font-bold text-gray-300 transition-all group-hover:border-blue-500/30 group-hover:text-blue-400">
+                                                        View Infraction
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
                         </div>
 
                         <div className="p-4 border-t border-white/5 bg-black/20 text-center">
@@ -289,14 +328,14 @@ export default function LoggingPage() {
                                         <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">User <span className="text-rose-500">*</span></label>
                                         <div className="relative group">
                                             <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold">
-                                                V
+                                                {newLog.targetUser.charAt(0) || '?'}
                                             </div>
                                             <input
                                                 type="text"
                                                 className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-14 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all hover:bg-black/60"
                                                 placeholder="Search for user..."
-                                                value={newLog.user}
-                                                onChange={(e) => setNewLog({ ...newLog, user: e.target.value })}
+                                                value={newLog.targetUser}
+                                                onChange={(e) => setNewLog({ ...newLog, targetUser: e.target.value })}
                                             />
                                         </div>
                                     </div>
@@ -368,7 +407,8 @@ export default function LoggingPage() {
                             <div className="p-6 border-t border-white/10 bg-white/[0.02] flex items-center justify-end">
                                 <button
                                     className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:scale-[1.01] active:scale-[0.99]"
-                                    onClick={() => setShowCreateModal(false)}
+                                    onClick={handleCreateLog}
+                                    disabled={!newLog.targetUser || !newLog.reason}
                                 >
                                     Create
                                 </button>

@@ -59,7 +59,7 @@ export default function Announcements() {
       try {
         const userData = JSON.parse(decodeURIComponent(userCookie.split("=")[1]));
         setUser(userData);
-        
+
         // Check if user is owner or Direction Board
         const isOwner = userData.id === OWNER_USER_ID;
         const isDirectionBoard = (userData.adminLevel ?? 0) >= AdminLevel.DIRECTION_BOARD;
@@ -127,8 +127,15 @@ export default function Announcements() {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex">
         <Sidebar user={user} />
-        <main className="flex-1 lg:ml-72 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8 flex items-center justify-center">
-          <div className="text-center">
+        <main className="flex-1 lg:ml-72 relative overflow-hidden p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8 flex items-center justify-center">
+          {/* Background Image with Gradient Overlay */}
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
+            style={{ backgroundImage: "url('/images/honolulu_sunset_background.png')" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/60 via-[#0a0a0f]/40 to-[#0a0a0f] pointer-events-none" />
+
+          <div className="relative z-10 text-center">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-500/20 flex items-center justify-center">
               <svg className="w-10 h-10 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -149,8 +156,15 @@ export default function Announcements() {
     <div className="min-h-screen bg-[#0a0a0f] flex">
       <Sidebar user={user} />
 
-      <main className="flex-1 lg:ml-72 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8">
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <main className="flex-1 lg:ml-72 relative overflow-hidden p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8">
+        {/* Background Image with Gradient Overlay */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
+          style={{ backgroundImage: "url('/images/honolulu_sunset_background.png')" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/60 via-[#0a0a0f]/40 to-[#0a0a0f] pointer-events-none" />
+
+        <div className="relative z-10">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-white">Announcements 📢</h1>
             <p className="text-gray-400 mt-1 text-sm sm:text-base">Manage and create announcements for HSRP staff</p>
@@ -257,11 +271,10 @@ export default function Announcements() {
                       <button
                         key={priority}
                         onClick={() => setNewAnnouncement({ ...newAnnouncement, priority })}
-                        className={`flex-1 px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
-                          newAnnouncement.priority === priority
-                            ? getPriorityColor(priority)
-                            : "bg-white/5 text-gray-400 border-white/10 hover:bg-white/10"
-                        }`}
+                        className={`flex-1 px-4 py-2 rounded-xl text-sm font-medium transition-all border ${newAnnouncement.priority === priority
+                          ? getPriorityColor(priority)
+                          : "bg-white/5 text-gray-400 border-white/10 hover:bg-white/10"
+                          }`}
                       >
                         {priority.charAt(0).toUpperCase() + priority.slice(1)}
                       </button>

@@ -233,7 +233,7 @@ export default function ServerManagement() {
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url('https://cdn.discordapp.com/attachments/1458014676435599384/1458018803257708715/ChatGPT_Image_Jan_5_2026_10_45_46_PM.png?ex=6960c053&is=695f6ed3&hm=0023748885edd4a47d79c97c7e8db05bbc8501c85e5f661df687cd21086504b1')`,
+            backgroundImage: `url('/images/honolulu_sunset_background.png')`,
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/60 via-[#0a0a0f]/40 to-[#0a0a0f]" />
@@ -252,8 +252,8 @@ export default function ServerManagement() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                  ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
                   }`}
               >
                 {tab.name}
@@ -379,9 +379,9 @@ export default function ServerManagement() {
                             <td className="px-4 py-3 text-gray-400">{player.Callsign || "-"}</td>
                             <td className="px-4 py-3">
                               <span className={`px-2 py-1 rounded-lg text-xs ${player.Permission === "Server Owner" ? "bg-yellow-500/20 text-yellow-400" :
-                                  player.Permission === "Server Administrator" ? "bg-red-500/20 text-red-400" :
-                                    player.Permission === "Server Moderator" ? "bg-blue-500/20 text-blue-400" :
-                                      "bg-gray-500/20 text-gray-400"
+                                player.Permission === "Server Administrator" ? "bg-red-500/20 text-red-400" :
+                                  player.Permission === "Server Moderator" ? "bg-blue-500/20 text-blue-400" :
+                                    "bg-gray-500/20 text-gray-400"
                                 }`}>
                                 {player.Permission}
                               </span>
@@ -406,8 +406,8 @@ export default function ServerManagement() {
                       key={type}
                       onClick={() => setLogType(type)}
                       className={`px-3 py-1.5 rounded-lg text-sm transition-all ${logType === type
-                          ? "bg-blue-600/80 text-white"
-                          : "bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
+                        ? "bg-blue-600/80 text-white"
+                        : "bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
                         }`}
                     >
                       {type === "join" ? "Join Logs" :
@@ -570,9 +570,9 @@ export default function ServerManagement() {
                   return (
                     <div key={group.level} className="mb-6 last:mb-0">
                       <h3 className={`text-sm font-medium mb-3 ${group.color === "blue" ? "text-blue-400" :
-                          group.color === "purple" ? "text-purple-400" :
-                            group.color === "orange" ? "text-orange-400" :
-                              "text-red-400"
+                        group.color === "purple" ? "text-purple-400" :
+                          group.color === "orange" ? "text-orange-400" :
+                            "text-red-400"
                         }`}>
                         {group.title}
                       </h3>
@@ -582,9 +582,9 @@ export default function ServerManagement() {
                             key={quick.label}
                             onClick={() => setCommandInput(quick.cmd)}
                             className={`px-4 py-3 rounded-xl text-sm text-left border transition-all ${group.color === "blue" ? "bg-blue-500/10 text-blue-300 border-blue-500/20 hover:bg-blue-500/20" :
-                                group.color === "purple" ? "bg-purple-500/10 text-purple-300 border-purple-500/20 hover:bg-purple-500/20" :
-                                  group.color === "orange" ? "bg-orange-500/10 text-orange-300 border-orange-500/20 hover:bg-orange-500/20" :
-                                    "bg-red-500/10 text-red-300 border-red-500/20 hover:bg-red-500/20"
+                              group.color === "purple" ? "bg-purple-500/10 text-purple-300 border-purple-500/20 hover:bg-purple-500/20" :
+                                group.color === "orange" ? "bg-orange-500/10 text-orange-300 border-orange-500/20 hover:bg-orange-500/20" :
+                                  "bg-red-500/10 text-red-300 border-red-500/20 hover:bg-red-500/20"
                               }`}
                           >
                             {quick.label}

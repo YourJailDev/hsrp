@@ -167,7 +167,7 @@ export default function ShiftPage() {
                 <div
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                     style={{
-                        backgroundImage: `url('https://cdn.discordapp.com/attachments/1458014676435599384/1458018803257708715/ChatGPT_Image_Jan_5_2026_10_45_46_PM.png?ex=6960c053&is=695f6ed3&hm=0023748885edd4a47d79c97c7e8db05bbc8501c85e5f661df687cd21086504b1')`,
+                        backgroundImage: `url('/images/honolulu_sunset_background.png')`,
                     }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/60 via-[#0a0a0f]/40 to-[#0a0a0f]" />
@@ -215,8 +215,8 @@ export default function ShiftPage() {
                                                 onClick={() => startShift(option.id)}
                                                 disabled={actionLoading || !hasRole}
                                                 className={`group p-6 rounded-2xl bg-[#1a1a2e]/80 backdrop-blur-sm border transition-all transform hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center gap-4 ${hasRole
-                                                        ? `border-${option.color}-500/20 hover:border-${option.color}-500/50`
-                                                        : 'border-white/5 opacity-50 cursor-not-allowed'
+                                                    ? `border-${option.color}-500/20 hover:border-${option.color}-500/50`
+                                                    : 'border-white/5 opacity-50 cursor-not-allowed'
                                                     }`}
                                             >
                                                 <span className="text-4xl">{option.icon}</span>
@@ -270,8 +270,8 @@ export default function ShiftPage() {
                                                     }`}
                                             >
                                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${index === 0 ? "bg-yellow-500 text-black" :
-                                                        index === 1 ? "bg-gray-300 text-black" :
-                                                            index === 2 ? "bg-amber-600 text-white" : "bg-white/10 text-gray-400"
+                                                    index === 1 ? "bg-gray-300 text-black" :
+                                                        index === 2 ? "bg-amber-600 text-white" : "bg-white/10 text-gray-400"
                                                     }`}>
                                                     {index + 1}
                                                 </div>

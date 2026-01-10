@@ -11,8 +11,15 @@ export default async function Home() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black">
-      <div className="w-full max-w-xl rounded-2xl border border-zinc-700/50 bg-zinc-900/80 p-10 shadow-xl flex flex-col items-center">
+    <div className="flex min-h-screen items-center justify-center bg-black relative overflow-hidden">
+      {/* Background Image with Gradient Overlay */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
+        style={{ backgroundImage: "url('/images/honolulu_sunset_background.png')" }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/60 via-[#0a0a0f]/40 to-[#0a0a0f] pointer-events-none" />
+
+      <div className="relative z-10 w-full max-w-xl rounded-2xl border border-zinc-700/50 bg-zinc-900/80 p-10 shadow-xl flex flex-col items-center backdrop-blur-sm">
         <Image
           src="https://images-ext-1.discordapp.net/external/zHtYuWHJ4jcw2EiyELgUy7WaF2oWpO8br0FmBzgJa2c/%3Fsize%3D512/https/cdn.discordapp.com/icons/1441821616186196191/8db10a79e33d3388a413c6d3989385e8.png?format=webp&quality=lossless&width=160&height=160"
           alt="Server Logo"

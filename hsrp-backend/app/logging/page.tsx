@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Sidebar from "../components/Sidebar";
+import { AdminLevel } from "../config/roles";
 
 interface User {
     id: string;
@@ -41,6 +42,9 @@ export default function LoggingPage() {
     const [ingamePlayers, setIngamePlayers] = useState<IngamePlayer[]>([]);
     const [showPlayerDropdown, setShowPlayerDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const [showViewModal, setShowViewModal] = useState(false);
+    const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null);
 
     // Form state for new log
     const [newLog, setNewLog] = useState({
@@ -159,6 +163,28 @@ export default function LoggingPage() {
             }
         } catch (err) {
             console.error("Failed to create log:", err);
+        }
+    };
+
+    const handleDeleteLog = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this log? This cannot be undone.")) return;
+
+        try {
+            const res = await fetch(`/api/logs/${id}`, {
+                method: "DELETE",
+            });
+
+            if (res.ok) {
+                setShowViewModal(false);
+                setSelectedLog(null);
+                fetchLogs();
+            } else {
+                const data = await res.json();
+                alert(data.error || "Failed to delete log");
+            }
+        } catch (err) {
+            console.error("Failed to delete log:", err);
+            alert("An error occurred while deleting the log");
         }
     };
 
@@ -356,7 +382,13 @@ export default function LoggingPage() {
                                                     <p className="text-xs text-gray-500 font-medium">{new Date(log.timestamp).toLocaleString()}</p>
                                                 </td>
                                                 <td className="py-4 px-6 text-right">
-                                                    <button className="bg-white/5 hover:bg-white/10 border border-white/5 px-4 py-1.5 rounded-lg text-xs font-bold text-gray-300 transition-all group-hover:border-blue-500/30 group-hover:text-blue-400">
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedLog(log);
+                                                            setShowViewModal(true);
+                                                        }}
+                                                        className="bg-white/5 hover:bg-white/10 border border-white/5 px-4 py-1.5 rounded-lg text-xs font-bold text-gray-300 transition-all group-hover:border-blue-500/30 group-hover:text-blue-400"
+                                                    >
                                                         View Infraction
                                                     </button>
                                                 </td>
@@ -524,6 +556,75 @@ export default function LoggingPage() {
                     </div>
                 )}
             </main>
+
+            {/* View Infraction Modal */}
+            {showViewModal && selectedLog && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in fade-in zoom-in duration-300">
+                    <div className="bg-[#1a1a2e]/90 border border-white/10 rounded-3xl w-full max-w-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col">
+                        <div className="p-6 border-b border-white/10 flex items-center justify-between">
+                            <h3 className="font-black uppercase tracking-[.2em] text-sm text-blue-400">Infraction Details</h3>
+                            <button onClick={() => setShowViewModal(false)} className="text-gray-500 hover:text-white transition-colors">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="p-8 space-y-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-xl font-bold">
+                                    {selectedLog.user.name.charAt(0)}
+                                </div>
+                                <div>
+                                    <h4 className="text-xl font-bold text-white">{selectedLog.user.name}</h4>
+                                    <p className="text-xs text-gray-500 uppercase tracking-widest">{new Date(selectedLog.timestamp).toLocaleString()}</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Action</p>
+                                    <p className="text-sm font-bold text-white">{selectedLog.action}</p>
+                                </div>
+                                <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Type</p>
+                                    <p className="text-sm font-bold text-rose-400 uppercase">{selectedLog.type}</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Staff Member</p>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-6 h-6 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center text-[10px] font-bold border border-blue-500/20">
+                                        {(selectedLog as any).staff?.username?.charAt(0) || 'S'}
+                                    </div>
+                                    <p className="text-sm text-gray-300">{(selectedLog as any).staff?.username || "Unknown Staff"}</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-white/5 rounded-2xl p-5 border border-white/5">
+                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">Infraction Notes</p>
+                                <p className="text-sm text-gray-300 leading-relaxed italic">"{selectedLog.notes}"</p>
+                            </div>
+                        </div>
+                        <div className="p-6 border-t border-white/10 bg-white/[0.02] flex items-center gap-3">
+                            <button
+                                onClick={() => setShowViewModal(false)}
+                                className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold py-3 rounded-xl transition-all"
+                            >
+                                Close
+                            </button>
+                            {user?.adminLevel && user.adminLevel >= AdminLevel.INTERNAL_AFFAIRS && (
+                                <button
+                                    onClick={() => selectedLog._id && handleDeleteLog(selectedLog._id)}
+                                    className="px-6 bg-rose-600/20 hover:bg-rose-600 text-rose-500 hover:text-white font-bold py-3 rounded-xl transition-all border border-rose-500/20"
+                                >
+                                    Delete
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {

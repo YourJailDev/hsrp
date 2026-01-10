@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Sidebar from "../components/Sidebar";
 
@@ -23,6 +23,11 @@ interface LogEntry {
     type: string;
 }
 
+interface IngamePlayer {
+    id: string;
+    username: string;
+}
+
 export default function LoggingPage() {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -32,6 +37,10 @@ export default function LoggingPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterMember, setFilterMember] = useState("Any Member");
     const [filterAction, setFilterAction] = useState("All Actions");
+
+    const [ingamePlayers, setIngamePlayers] = useState<IngamePlayer[]>([]);
+    const [showPlayerDropdown, setShowPlayerDropdown] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Form state for new log
     const [newLog, setNewLog] = useState({
@@ -47,12 +56,32 @@ export default function LoggingPage() {
             const res = await fetch("/api/logs");
             if (res.ok) {
                 const data = await res.json();
-                setLogs(data);
+                setLogs(data || []);
             }
         } catch (err) {
             console.error("Failed to fetch logs:", err);
         } finally {
             setLogsLoading(false);
+        }
+    };
+
+    const fetchIngamePlayers = async () => {
+        try {
+            const res = await fetch("/api/erlc/players");
+            if (res.ok) {
+                const data = await res.json();
+                // Map the ERLC data to our IngamePlayer interface
+                // Based on ERLC API it's usually an array of strings or objects
+                if (Array.isArray(data)) {
+                    const formatted: IngamePlayer[] = data.map((p: any) => ({
+                        id: typeof p === 'string' ? p : (p.id || p.username),
+                        username: typeof p === 'string' ? p : (p.username || p.Name)
+                    }));
+                    setIngamePlayers(formatted);
+                }
+            }
+        } catch (err) {
+            console.error("Failed to fetch ingame players:", err);
         }
     };
 
@@ -64,6 +93,14 @@ export default function LoggingPage() {
                     const userData = await res.json();
                     setUser(userData);
                     fetchLogs();
+
+                    // Periodic notification check for staff members (every 45s)
+                    const interval = setInterval(() => {
+                        fetch("/api/notifications/check", { method: "POST" })
+                            .catch(err => console.error("Notification check error:", err));
+                    }, 45000);
+
+                    return () => clearInterval(interval);
                 } else {
                     window.location.href = "/";
                 }
@@ -74,6 +111,22 @@ export default function LoggingPage() {
             }
         }
         fetchUser();
+    }, []);
+
+    useEffect(() => {
+        if (showCreateModal) {
+            fetchIngamePlayers();
+        }
+    }, [showCreateModal]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setShowPlayerDropdown(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     const handleCreateLog = async () => {
@@ -90,6 +143,8 @@ export default function LoggingPage() {
                 setShowCreateModal(false);
                 setNewLog({ targetUser: "", type: "Warn", reason: "", description: "" });
                 fetchLogs();
+                // Trigger PM check immediately
+                fetch("/api/notifications/check", { method: "POST" }).catch(() => { });
             }
         } catch (err) {
             console.error("Failed to create log:", err);
@@ -135,6 +190,10 @@ export default function LoggingPage() {
             return ts;
         }
     };
+
+    const filteredPlayers = ingamePlayers.filter(p =>
+        p.username.toLowerCase().includes(newLog.targetUser.toLowerCase())
+    );
 
     if (loading || !user) {
         return (
@@ -324,7 +383,7 @@ export default function LoggingPage() {
                             <div className="p-8 overflow-y-auto custom-scrollbar space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {/* User Selection */}
-                                    <div>
+                                    <div className="relative">
                                         <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">User <span className="text-rose-500">*</span></label>
                                         <div className="relative group">
                                             <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold">
@@ -335,9 +394,46 @@ export default function LoggingPage() {
                                                 className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-14 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all hover:bg-black/60"
                                                 placeholder="Search for user..."
                                                 value={newLog.targetUser}
-                                                onChange={(e) => setNewLog({ ...newLog, targetUser: e.target.value })}
+                                                onFocus={() => setShowPlayerDropdown(true)}
+                                                onChange={(e) => {
+                                                    setNewLog({ ...newLog, targetUser: e.target.value });
+                                                    setShowPlayerDropdown(true);
+                                                }}
                                             />
                                         </div>
+
+                                        {/* Player Dropdown */}
+                                        {showPlayerDropdown && (
+                                            <div ref={dropdownRef} className="absolute z-[110] left-0 right-0 mt-2 bg-[#1a1a2e] border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                                <div className="max-h-48 overflow-y-auto custom-scrollbar p-1">
+                                                    {filteredPlayers.length > 0 ? (
+                                                        filteredPlayers.map((player) => (
+                                                            <button
+                                                                key={player.id}
+                                                                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left group"
+                                                                onClick={() => {
+                                                                    setNewLog({ ...newLog, targetUser: player.username });
+                                                                    setShowPlayerDropdown(false);
+                                                                }}
+                                                            >
+                                                                <div className="w-7 h-7 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center text-[10px] font-bold border border-blue-500/20 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                                                    {player.username.charAt(0)}
+                                                                </div>
+                                                                <span className="text-sm text-gray-300 group-hover:text-white">{player.username}</span>
+                                                                <span className="ml-auto text-[10px] font-bold text-green-500 uppercase tracking-tighter">Online</span>
+                                                            </button>
+                                                        ))
+                                                    ) : (
+                                                        <div className="px-4 py-3 text-xs text-gray-500 italic flex items-center gap-2">
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            </svg>
+                                                            No in-game players found. Manual entry enabled.
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Log Type */}

@@ -41,8 +41,18 @@ export async function POST(req: NextRequest) {
             timestamp: new Date().toISOString(),
         };
 
-        await db.collection("logs").insertOne(newLog);
-        return NextResponse.json({ success: true, log: newLog });
+        const logResult = await db.collection("logs").insertOne(newLog);
+
+        // Create pending notification
+        await db.collection("notifications").insertOne({
+            targetUser: targetUser,
+            type: type,
+            reason: reason,
+            sent: false,
+            timestamp: new Date().toISOString()
+        });
+
+        return NextResponse.json({ success: true, log: newLog, id: logResult.insertedId });
     } catch (error) {
         console.error("Failed to create log:", error);
         return NextResponse.json({ error: "Failed to create log" }, { status: 500 });

@@ -25,9 +25,10 @@ export async function POST() {
         const players = await playersRes.json();
         // ERLC players can be strings "Name:ID" or objects. Let's handle both.
         const currentNames = players.map((p: any) => {
-            if (typeof p === 'string') return p.split(":")[0];
-            return p.username || p.Name;
-        });
+            const playerStr = p.Player || (typeof p === 'string' ? p : null);
+            if (!playerStr) return null;
+            return playerStr.split(":")[0];
+        }).filter((name: string | null) => name !== null);
 
         // 2. Query pending notifications for in-game players
         const pending = await db.collection("notifications").find({

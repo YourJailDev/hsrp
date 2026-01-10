@@ -75,10 +75,15 @@ export default function LoggingPage() {
                 if (Array.isArray(data)) {
                     const formatted: IngamePlayer[] = data
                         .map((p: any) => {
-                            const username = typeof p === 'string' ? p : (p.username || p.Name);
-                            if (!username) return null;
+                            const playerStr = p.Player || (typeof p === 'string' ? p : null);
+                            if (!playerStr) return null;
+
+                            const parts = playerStr.split(":");
+                            const username = parts[0] || playerStr;
+                            const id = parts[1] || playerStr;
+
                             return {
-                                id: typeof p === 'string' ? p : (p.id || p.username || username),
+                                id: id,
                                 username: username
                             };
                         })

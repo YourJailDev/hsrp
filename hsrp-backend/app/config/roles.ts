@@ -30,13 +30,13 @@ export const PAGE_PERMISSIONS: Record<string, AdminLevel> = {
   "/loa": AdminLevel.MODERATOR,
   "/server-management": AdminLevel.MODERATOR,
   "/announcements": AdminLevel.DIRECTION_BOARD,
-  "/staff-training": AdminLevel.TRAINEE_MOD,
-  "/staff-training-host": AdminLevel.INTERNAL_AFFAIRS,
+  "/logging": AdminLevel.MODERATOR,
 };
 
 // Navigation items with their required permissions
 export const NAV_ITEMS = [
   { name: "Dashboard", href: "/dashboard", icon: "dashboard", requiredLevel: AdminLevel.MODERATOR },
+  { name: "Logging", href: "/logging", icon: "logging", requiredLevel: AdminLevel.MODERATOR },
   { name: "Staff Training", href: "/staff-training", icon: "training", requiredLevel: AdminLevel.TRAINEE_MOD },
   { name: "Training Host", href: "/staff-training-host", icon: "host", requiredLevel: AdminLevel.INTERNAL_AFFAIRS },
   { name: "LOA", href: "/loa", icon: "loa", requiredLevel: AdminLevel.MODERATOR },

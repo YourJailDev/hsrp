@@ -23,6 +23,14 @@ export const ROLE_PERMISSIONS: Record<string, AdminLevel> = {
   "1442014338184380416": AdminLevel.TRAINEE_MOD,             // Trainee Mod role ID
 };
 
+// Shift specific Role IDs
+export const SHIFT_ROLES = {
+  MODERATING: "1442014281833910443", // Default to Moderator role for now if unknown
+  HR_SUPERVISOR: "1442015630093062154", // Default to Internal Affairs for now
+  FIFTY_FIFTY: "1442014929799352382", // Default to Administrator for now
+  ON_SHIFT: "ON_SHIFT_ROLE_ID", // TODO: Replace with actual "On Shift" Role ID
+};
+
 // Define which pages require which admin level
 export const PAGE_PERMISSIONS: Record<string, AdminLevel> = {
   "/dashboard": AdminLevel.MODERATOR,
@@ -31,6 +39,7 @@ export const PAGE_PERMISSIONS: Record<string, AdminLevel> = {
   "/server-management": AdminLevel.MODERATOR,
   "/announcements": AdminLevel.DIRECTION_BOARD,
   "/logging": AdminLevel.MODERATOR,
+  "/shift": AdminLevel.MODERATOR,
 };
 
 // Navigation items with their required permissions
@@ -42,6 +51,7 @@ export const NAV_ITEMS = [
   { name: "LOA", href: "/loa", icon: "loa", requiredLevel: AdminLevel.MODERATOR },
   { name: "Server Management", href: "/server-management", icon: "settings", requiredLevel: AdminLevel.MODERATOR },
   { name: "Staff Handbook", href: "/staff-handbook", icon: "handbook", requiredLevel: AdminLevel.MODERATOR },
+  { name: "Shift", href: "/shift", icon: "shift", requiredLevel: AdminLevel.MODERATOR },
   { name: "Announcements", href: "/announcements", icon: "announcements", requiredLevel: AdminLevel.DIRECTION_BOARD },
 ];
 

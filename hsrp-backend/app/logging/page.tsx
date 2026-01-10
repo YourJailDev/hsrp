@@ -73,10 +73,16 @@ export default function LoggingPage() {
                 // Map the ERLC data to our IngamePlayer interface
                 // Based on ERLC API it's usually an array of strings or objects
                 if (Array.isArray(data)) {
-                    const formatted: IngamePlayer[] = data.map((p: any) => ({
-                        id: typeof p === 'string' ? p : (p.id || p.username),
-                        username: typeof p === 'string' ? p : (p.username || p.Name)
-                    }));
+                    const formatted: IngamePlayer[] = data
+                        .map((p: any) => {
+                            const username = typeof p === 'string' ? p : (p.username || p.Name);
+                            if (!username) return null;
+                            return {
+                                id: typeof p === 'string' ? p : (p.id || p.username || username),
+                                username: username
+                            };
+                        })
+                        .filter((p): p is IngamePlayer => p !== null);
                     setIngamePlayers(formatted);
                 }
             }
@@ -192,7 +198,7 @@ export default function LoggingPage() {
     };
 
     const filteredPlayers = ingamePlayers.filter(p =>
-        p.username.toLowerCase().includes(newLog.targetUser.toLowerCase())
+        p?.username?.toLowerCase().includes((newLog.targetUser || "").toLowerCase())
     );
 
     if (loading || !user) {

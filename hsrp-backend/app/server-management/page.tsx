@@ -33,6 +33,7 @@ interface QuickCommand {
   description?: string;
 }
 
+const ERLC_SERVER_KEY = process.env.NEXT_PUBLIC_ERLC_SERVER_KEY;
 const QUICK_COMMANDS: QuickCommand[] = [
   // Moderator/Administrator (Level 2+) - View commands
   { label: "View", cmd: ":view ", requiredLevel: AdminLevel.MODERATOR, description: "View a player" },
@@ -247,7 +248,10 @@ export default function ServerManagement() {
         const command = `:h ${reminder.message}`;
         await fetch("https://api.policeroleplay.community/v1/server/command", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": ERLC_SERVER_KEY || ""
+          },
           body: JSON.stringify({ command }),
         });
       }
@@ -275,7 +279,10 @@ export default function ServerManagement() {
       try {
         await fetch("https://api.policeroleplay.community/v1/server/command", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": ERLC_SERVER_KEY || ""
+          },
           body: JSON.stringify({ command }),
         });
         setReminderStatus(`Sent reminder: ${reminder.message}`);

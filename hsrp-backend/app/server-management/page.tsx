@@ -250,7 +250,7 @@ export default function ServerManagement() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": ERLC_SERVER_KEY || ""
+            "Authorization": process.env.ERLC_SERVER_KEY || ""
           },
           body: JSON.stringify({ command }),
         });

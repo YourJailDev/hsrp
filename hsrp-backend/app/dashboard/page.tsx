@@ -155,19 +155,14 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Announcements Quick Link */}
-            <Link href="/announcements" className="rounded-2xl p-6 bg-gradient-to-br from-blue-600/40 to-blue-800/40 backdrop-blur-md border border-blue-500/20 hover:from-blue-600/50 hover:to-blue-800/50 transition-all">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">📢</span>
-                  <span className="text-white font-medium">Announcements</span>
-                </div>
-                <span className="text-white/60 text-sm">View All →</span>
+            {/* On-Duty Staff */}
+            <div className="rounded-2xl p-6 bg-[#1a1a2e]/60 backdrop-blur-md border border-white/5">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-2xl">👮</span>
+                <span className="text-white/90 font-medium">On-Duty Staff</span>
               </div>
-              <p className="text-white font-bold text-xl truncate">
-                {announcements[0]?.title || "No recent announcements"}
-              </p>
-            </Link>
+              <p className="text-4xl font-bold text-white">--</p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">

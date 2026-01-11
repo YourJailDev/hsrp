@@ -24,6 +24,8 @@ export async function POST(req: NextRequest) {
             .find({ active: true })
             .toArray();
 
+        console.log(`[Reminders] Found ${reminders.length} active reminders`);
+
         let sentCount = 0;
         const results = [];
 
@@ -31,11 +33,15 @@ export async function POST(req: NextRequest) {
             const intervalMs = reminder.interval * 1000;
             const timeSinceLastSent = now - (reminder.lastSent || 0);
 
+            console.log(`[Reminders] Checking "${reminder.message.substring(0, 20)}...": Due in ${Math.max(0, (intervalMs - timeSinceLastSent) / 1000).toFixed(1)}s`);
+
             if (timeSinceLastSent >= intervalMs) {
                 // Time to send!
                 // Use :h (hint) instead of :m (message) as requested
                 // If message starts with : (e.g. :m or :h), use it as is
                 const command = reminder.message.startsWith(":") ? reminder.message : `:h ${reminder.message}`;
+
+                console.log(`[Reminders] Sending command: ${command}`);
 
                 try {
                     const response = await fetch(`${ERLC_API_BASE_URL}/server/command`, {
@@ -48,6 +54,7 @@ export async function POST(req: NextRequest) {
                     });
 
                     if (response.ok) {
+                        console.log(`[Reminders] Successfully sent: ${reminder.id}`);
                         await db.collection("reminders").updateOne(
                             { id: reminder.id },
                             { $set: { lastSent: now } }
@@ -56,11 +63,11 @@ export async function POST(req: NextRequest) {
                         results.push({ id: reminder.id, status: "success" });
                     } else {
                         const errorText = await response.text();
-                        console.error(`Failed to send reminder ${reminder.id}:`, errorText);
-                        results.push({ id: reminder.id, status: "failed", error: errorText });
+                        console.error(`[Reminders] Failed to send ${reminder.id} (Status ${response.status}):`, errorText);
+                        results.push({ id: reminder.id, status: "failed", error: errorText, statusCode: response.status });
                     }
                 } catch (err) {
-                    console.error(`Error sending reminder ${reminder.id}:`, err);
+                    console.error(`[Reminders] Error during fetch for ${reminder.id}:`, err);
                     results.push({ id: reminder.id, status: "error", error: String(err) });
                 }
             }

@@ -256,6 +256,24 @@ export default function ServerManagement() {
     }
   };
 
+  const handleTriggerProcess = async () => {
+    setReminderLoading(true);
+    try {
+      const res = await fetch("/api/erlc/reminders/process", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        setCommandMessage({ type: "success", text: `Process triggered: ${data.sentCount} reminders sent.` });
+        fetchReminders();
+      } else {
+        setError(data.error || "Failed to trigger process");
+      }
+    } catch {
+      setError("Failed to trigger process");
+    } finally {
+      setReminderLoading(false);
+    }
+  };
+
   const executeCommand = async () => {
     if (!commandInput.trim()) return;
 
@@ -738,15 +756,27 @@ export default function ServerManagement() {
               <div className="bg-[#1a1a2e]/80 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/5 shadow-xl">
                 <div className="p-4 border-b border-white/10 flex justify-between items-center">
                   <h2 className="text-white font-semibold">Scheduled Reminders</h2>
-                  <button
-                    onClick={fetchReminders}
-                    className="text-gray-400 hover:text-white text-sm flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    Refresh
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleTriggerProcess}
+                      disabled={reminderLoading}
+                      className="text-blue-400 hover:text-white text-sm flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-blue-500/10 border border-blue-500/20 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      {reminderLoading ? "Processing..." : "Trigger Process"}
+                    </button>
+                    <button
+                      onClick={fetchReminders}
+                      className="text-gray-400 hover:text-white text-sm flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Refresh
+                    </button>
+                  </div>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">

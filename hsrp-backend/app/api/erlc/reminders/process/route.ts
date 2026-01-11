@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
         const results = [];
 
         for (const reminder of reminders) {
-            const intervalMs = reminder.interval * 60 * 1000;
+            const intervalMs = reminder.interval * 1000;
             const timeSinceLastSent = now - (reminder.lastSent || 0);
 
             if (timeSinceLastSent >= intervalMs) {

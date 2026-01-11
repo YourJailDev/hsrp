@@ -712,7 +712,7 @@ export default function ServerManagement() {
                     />
                   </div>
                   <div>
-                    <label className="text-gray-400 text-xs mb-1.5 block">Interval (min)</label>
+                    <label className="text-gray-400 text-xs mb-1.5 block">Interval (sec)</label>
                     <input
                       type="number"
                       value={reminderInput.interval}
@@ -754,7 +754,7 @@ export default function ServerManagement() {
                       <tr>
                         <th className="text-left text-gray-400 text-xs font-medium px-4 py-3">Status</th>
                         <th className="text-left text-gray-400 text-xs font-medium px-4 py-3">Message</th>
-                        <th className="text-left text-gray-400 text-xs font-medium px-4 py-3">Interval</th>
+                        <th className="text-left text-gray-400 text-xs font-medium px-4 py-3">Interval (s)</th>
                         <th className="text-left text-gray-400 text-xs font-medium px-4 py-3">Last Sent</th>
                         <th className="text-right text-gray-400 text-xs font-medium px-4 py-3">Actions</th>
                       </tr>
@@ -780,7 +780,7 @@ export default function ServerManagement() {
                               </button>
                             </td>
                             <td className="px-4 py-3 text-white text-sm max-w-md truncate">{reminder.message}</td>
-                            <td className="px-4 py-3 text-gray-400 text-sm">{reminder.interval}m</td>
+                            <td className="px-4 py-3 text-gray-400 text-sm">{reminder.interval}s</td>
                             <td className="px-4 py-3 text-gray-500 text-xs">
                               {reminder.lastSent ? new Date(reminder.lastSent).toLocaleString() : "Never"}
                             </td>
@@ -814,7 +814,7 @@ export default function ServerManagement() {
                     <h3 className="text-blue-400 font-semibold">How it works</h3>
                     <p className="text-gray-400 text-sm mt-1 leading-relaxed">
                       Reminders are sent to the in-game server using the <code className="text-blue-300 font-mono">:h</code> command.
-                      The interval determines how many minutes to wait between each message.
+                      The interval determines how many seconds to wait between each message.
                       Messages will only be sent if the reminder is marked as <span className="text-green-400">Active</span>.
                     </p>
                   </div>

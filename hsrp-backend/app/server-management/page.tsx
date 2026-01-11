@@ -13,7 +13,17 @@ interface User {
   adminLevel?: number;
 }
 
-type TabType = "overview" | "players" | "logs" | "commands" | "bans";
+interface Reminder {
+  id: string;
+  message: string;
+  interval: number;
+  active: boolean;
+  lastSent: number;
+  createdAt: string;
+  author: string;
+}
+
+type TabType = "overview" | "players" | "logs" | "commands" | "bans" | "reminders";
 
 // Commands organized by required rank
 interface QuickCommand {
@@ -75,6 +85,9 @@ export default function ServerManagement() {
   const [commandLogs, setCommandLogs] = useState<CommandLog[]>([]);
   const [modCalls, setModCalls] = useState<ModCall[]>([]);
   const [bans, setBans] = useState<Record<string, string>>({});
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [reminderInput, setReminderInput] = useState({ message: "", interval: "10" });
+  const [reminderLoading, setReminderLoading] = useState(false);
 
   // Command input
   const [commandInput, setCommandInput] = useState("");
@@ -153,21 +166,95 @@ export default function ServerManagement() {
     }
   }, []);
 
+  const fetchReminders = useCallback(async () => {
+    try {
+      const res = await fetch("/api/erlc/reminders");
+      if (res.ok) {
+        setReminders(await res.json());
+      }
+    } catch (err) {
+      console.error("Failed to fetch reminders:", err);
+    }
+  }, []);
+
   useEffect(() => {
     if (user) {
       fetchData();
       fetchLogs();
       fetchBans();
+      fetchReminders();
 
       // Auto-refresh every 30 seconds
       const interval = setInterval(() => {
         fetchData();
         fetchLogs();
+        fetchReminders();
       }, 30000);
 
       return () => clearInterval(interval);
     }
-  }, [user, fetchData, fetchLogs, fetchBans]);
+  }, [user, fetchData, fetchLogs, fetchBans, fetchReminders]);
+
+  const handleAddReminder = async () => {
+    if (!reminderInput.message.trim()) return;
+    if ((user?.adminLevel ?? 0) < AdminLevel.MANAGEMENT) {
+      setError("You don't have permission to manage reminders");
+      return;
+    }
+
+    setReminderLoading(true);
+    try {
+      const res = await fetch("/api/erlc/reminders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reminderInput),
+      });
+      if (res.ok) {
+        setReminderInput({ message: "", interval: "10" });
+        fetchReminders();
+      } else {
+        const data = await res.json();
+        setError(data.error || "Failed to add reminder");
+      }
+    } catch {
+      setError("Failed to add reminder");
+    } finally {
+      setReminderLoading(false);
+    }
+  };
+
+  const toggleReminder = async (reminder: Reminder) => {
+    if ((user?.adminLevel ?? 0) < AdminLevel.MANAGEMENT) {
+      setError("You don't have permission to manage reminders");
+      return;
+    }
+
+    try {
+      await fetch("/api/erlc/reminders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...reminder, active: !reminder.active }),
+      });
+      fetchReminders();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const deleteReminder = async (id: string) => {
+    if ((user?.adminLevel ?? 0) < AdminLevel.MANAGEMENT) {
+      setError("You don't have permission to manage reminders");
+      return;
+    }
+
+    if (!confirm("Are you sure you want to delete this reminder?")) return;
+    try {
+      await fetch(`/api/erlc/reminders?id=${id}`, { method: "DELETE" });
+      fetchReminders();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const executeCommand = async () => {
     if (!commandInput.trim()) return;
@@ -222,6 +309,7 @@ export default function ServerManagement() {
     { id: "logs", name: "Logs", icon: "list" },
     { id: "commands", name: "Commands", icon: "terminal" },
     { id: "bans", name: "Bans", icon: "ban" },
+    { id: "reminders", name: "Reminders", icon: "clock" },
   ];
 
   return (
@@ -602,6 +690,135 @@ export default function ServerManagement() {
                     <p>No commands available for your rank</p>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Reminders Tab */}
+          {activeTab === "reminders" && (
+            <div className="space-y-6">
+              {/* Add Reminder Card */}
+              <div className="bg-[#1a1a2e]/80 backdrop-blur-sm rounded-2xl p-6 border border-white/5 shadow-xl">
+                <h2 className="text-white font-semibold mb-4">Add Auto-Reminder ⏰</h2>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                  <div className="lg:col-span-2">
+                    <label className="text-gray-400 text-xs mb-1.5 block">Message</label>
+                    <input
+                      type="text"
+                      value={reminderInput.message}
+                      onChange={(e) => setReminderInput({ ...reminderInput, message: e.target.value })}
+                      placeholder=":m Please join our Discord server!"
+                      className="w-full bg-[#0a0a0f]/50 text-white px-4 py-2.5 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-400 text-xs mb-1.5 block">Interval (min)</label>
+                    <input
+                      type="number"
+                      value={reminderInput.interval}
+                      onChange={(e) => setReminderInput({ ...reminderInput, interval: e.target.value })}
+                      placeholder="10"
+                      min="1"
+                      className="w-full bg-[#0a0a0f]/50 text-white px-4 py-2.5 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <button
+                      onClick={handleAddReminder}
+                      disabled={reminderLoading || !reminderInput.message.trim()}
+                      className="w-full py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                    >
+                      {reminderLoading ? "Adding..." : "Add Reminder"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Reminders List */}
+              <div className="bg-[#1a1a2e]/80 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/5 shadow-xl">
+                <div className="p-4 border-b border-white/10 flex justify-between items-center">
+                  <h2 className="text-white font-semibold">Scheduled Reminders</h2>
+                  <button
+                    onClick={fetchReminders}
+                    className="text-gray-400 hover:text-white text-sm flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-[#0a0a0f]/50">
+                      <tr>
+                        <th className="text-left text-gray-400 text-xs font-medium px-4 py-3">Status</th>
+                        <th className="text-left text-gray-400 text-xs font-medium px-4 py-3">Message</th>
+                        <th className="text-left text-gray-400 text-xs font-medium px-4 py-3">Interval</th>
+                        <th className="text-left text-gray-400 text-xs font-medium px-4 py-3">Last Sent</th>
+                        <th className="text-right text-gray-400 text-xs font-medium px-4 py-3">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {reminders.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="text-center text-gray-500 py-8">
+                            No reminders scheduled
+                          </td>
+                        </tr>
+                      ) : (
+                        reminders.map((reminder) => (
+                          <tr key={reminder.id} className="hover:bg-white/5 transition-colors">
+                            <td className="px-4 py-3">
+                              <button
+                                onClick={() => toggleReminder(reminder)}
+                                className={`w-10 h-5 rounded-full relative transition-colors ${reminder.active ? "bg-green-500" : "bg-gray-600"
+                                  }`}
+                              >
+                                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${reminder.active ? "left-6" : "left-1"
+                                  }`} />
+                              </button>
+                            </td>
+                            <td className="px-4 py-3 text-white text-sm max-w-md truncate">{reminder.message}</td>
+                            <td className="px-4 py-3 text-gray-400 text-sm">{reminder.interval}m</td>
+                            <td className="px-4 py-3 text-gray-500 text-xs">
+                              {reminder.lastSent ? new Date(reminder.lastSent).toLocaleString() : "Never"}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <button
+                                onClick={() => deleteReminder(reminder.id)}
+                                className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Info Card */}
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-6">
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center shrink-0">
+                    <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-blue-400 font-semibold">How it works</h3>
+                    <p className="text-gray-400 text-sm mt-1 leading-relaxed">
+                      Reminders are sent to the in-game server using the <code className="text-blue-300 font-mono">:m</code> command.
+                      The interval determines how many minutes to wait between each message.
+                      Messages will only be sent if the reminder is marked as <span className="text-green-400">Active</span>.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           )}

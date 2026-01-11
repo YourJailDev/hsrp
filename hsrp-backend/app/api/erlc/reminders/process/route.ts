@@ -1,0 +1,76 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getDatabase } from "@/app/lib/mongodb";
+import { ERLC_API_BASE_URL } from "@/app/config/erlc";
+
+const serverKey = process.env.ERLC_SERVER_KEY || "";
+
+export async function POST(req: NextRequest) {
+    if (!serverKey) {
+        return NextResponse.json({ error: "ERLC API key not configured" }, { status: 500 });
+    }
+
+    try {
+        // Optional: Add a simple secret check for cron security
+        // const authHeader = req.headers.get('authorization');
+        // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+        //     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        // }
+
+        const db = await getDatabase();
+        const now = Date.now();
+
+        // Find active reminders
+        const reminders = await db.collection("reminders")
+            .find({ active: true })
+            .toArray();
+
+        let sentCount = 0;
+        const results = [];
+
+        for (const reminder of reminders) {
+            const intervalMs = reminder.interval * 60 * 1000;
+            const timeSinceLastSent = now - (reminder.lastSent || 0);
+
+            if (timeSinceLastSent >= intervalMs) {
+                // Time to send!
+                const command = `:m ${reminder.message}`;
+
+                try {
+                    const response = await fetch(`${ERLC_API_BASE_URL}/server/command`, {
+                        method: "POST",
+                        headers: {
+                            "Server-Key": serverKey,
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ command }),
+                    });
+
+                    if (response.ok) {
+                        await db.collection("reminders").updateOne(
+                            { id: reminder.id },
+                            { $set: { lastSent: now } }
+                        );
+                        sentCount++;
+                        results.push({ id: reminder.id, status: "success" });
+                    } else {
+                        const errorText = await response.text();
+                        console.error(`Failed to send reminder ${reminder.id}:`, errorText);
+                        results.push({ id: reminder.id, status: "failed", error: errorText });
+                    }
+                } catch (err) {
+                    console.error(`Error sending reminder ${reminder.id}:`, err);
+                    results.push({ id: reminder.id, status: "error", error: String(err) });
+                }
+            }
+        }
+
+        return NextResponse.json({
+            success: true,
+            sentCount,
+            results
+        });
+    } catch (error) {
+        console.error("Failed to process reminders:", error);
+        return NextResponse.json({ error: "Failed to process reminders" }, { status: 500 });
+    }
+}

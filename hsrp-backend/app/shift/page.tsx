@@ -208,7 +208,9 @@ export default function ShiftPage() {
                                         { id: "HR_SUPERVISOR", label: "HR Supervisor", icon: "📊", color: "purple", role: SHIFT_ROLES.HR_SUPERVISOR },
                                         { id: "FIFTY_FIFTY", label: "50/50", icon: "⚖️", color: "orange", role: SHIFT_ROLES.FIFTY_FIFTY },
                                     ].map((option) => {
-                                        const hasRole = user.roles.includes(option.role);
+                                        const hasRole = option.id === "MODERATING"
+                                            ? user.adminLevel >= 2 // AdminLevel.MODERATOR is 2
+                                            : user.roles.includes(option.role);
                                         return (
                                             <button
                                                 key={option.id}

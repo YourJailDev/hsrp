@@ -32,11 +32,19 @@ export async function POST(req: NextRequest) {
         }
 
         // Check if user has the required role for this shift type
-        const requiredRoleId = SHIFT_ROLES[type as keyof typeof SHIFT_ROLES];
-        if (!user.roles.includes(requiredRoleId)) {
-            return NextResponse.json({
-                error: `Permission Denied: You do not have the required role for ${type} shift.`
-            }, { status: 403 });
+        if (type === "MODERATING") {
+            if (user.adminLevel < 2) { // AdminLevel.MODERATOR
+                return NextResponse.json({
+                    error: `Permission Denied: You do not have the required rank for Moderating shift.`
+                }, { status: 403 });
+            }
+        } else {
+            const requiredRoleId = SHIFT_ROLES[type as keyof typeof SHIFT_ROLES];
+            if (!user.roles.includes(requiredRoleId)) {
+                return NextResponse.json({
+                    error: `Permission Denied: You do not have the required role for ${type} shift.`
+                }, { status: 403 });
+            }
         }
 
         // Add "On Shift" role

@@ -10,11 +10,13 @@ export enum AdminLevel {
   INTERNAL_AFFAIRS = 4,   // Internal Affairs - Same as Moderator
   MANAGEMENT = 5,         // Management - Full access
   DIRECTION_BOARD = 6,    // Direction Board - Full access
+  OWNER = 7,             // Owner - absolute power
 }
 
 // Map Discord role IDs to admin levels
 // Replace these with your actual Discord role IDs
 export const ROLE_PERMISSIONS: Record<string, AdminLevel> = {
+  "1446867539622756382": AdminLevel.OWNER,               // Owner / Superuser role ID
   "1442007891430215914": AdminLevel.DIRECTION_BOARD,     // Direction Board role ID
   "1442016481331118240": AdminLevel.MANAGEMENT,               // Management role ID
   "1442015630093062154": AdminLevel.INTERNAL_AFFAIRS,   // Internal Affairs role ID
@@ -81,6 +83,8 @@ export function canAccessPage(adminLevel: AdminLevel, page: string): boolean {
 // Helper function to get admin level name
 export function getAdminLevelName(level: AdminLevel): string {
   switch (level) {
+    case AdminLevel.OWNER:
+      return "Owner";
     case AdminLevel.DIRECTION_BOARD:
       return "Direction Board";
     case AdminLevel.MANAGEMENT:

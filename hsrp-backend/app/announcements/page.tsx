@@ -4,9 +4,6 @@ import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import { AdminLevel } from "../config/roles";
 
-// Owner user ID - always has full access
-const OWNER_USER_ID = "745175427533766726";
-
 interface User {
   id: string;
   username: string;
@@ -21,23 +18,6 @@ interface Announcement {
   author: string;
   createdAt: string;
   priority: "low" | "medium" | "high";
-}
-
-const STORAGE_KEY = "hsrp_announcements";
-
-function getStoredAnnouncements(): Announcement[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveAnnouncements(announcements: Announcement[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(announcements));
 }
 
 export default function Announcements() {
@@ -60,8 +40,7 @@ export default function Announcements() {
         const userData = JSON.parse(decodeURIComponent(userCookie.split("=")[1]));
         setUser(userData);
 
-        // Check if user is owner or Direction Board
-        const isOwner = userData.id === OWNER_USER_ID;
+        const isOwner = userData.adminLevel === AdminLevel.OWNER;
         const isDirectionBoard = (userData.adminLevel ?? 0) >= AdminLevel.DIRECTION_BOARD;
         setHasPermission(isOwner || isDirectionBoard);
       } catch {
@@ -71,34 +50,54 @@ export default function Announcements() {
       window.location.href = "/";
     }
 
-    // Load announcements from storage
-    setAnnouncements(getStoredAnnouncements());
+    fetchAnnouncements();
   }, []);
 
-  const handleCreateAnnouncement = () => {
-    if (!newAnnouncement.title.trim() || !newAnnouncement.content.trim() || !hasPermission) return;
-
-    const announcement: Announcement = {
-      id: Date.now().toString(),
-      title: newAnnouncement.title,
-      content: newAnnouncement.content,
-      author: user?.username || "Unknown",
-      createdAt: new Date().toISOString(),
-      priority: newAnnouncement.priority,
-    };
-
-    const updated = [announcement, ...announcements];
-    setAnnouncements(updated);
-    saveAnnouncements(updated);
-    setNewAnnouncement({ title: "", content: "", priority: "medium" });
-    setShowCreateModal(false);
+  const fetchAnnouncements = async () => {
+    try {
+      const res = await fetch("/api/announcements");
+      if (res.ok) {
+        const data = await res.json();
+        setAnnouncements(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch announcements:", error);
+    }
   };
 
-  const deleteAnnouncement = (id: string) => {
+  const handleCreateAnnouncement = async () => {
+    if (!newAnnouncement.title.trim() || !newAnnouncement.content.trim() || !hasPermission) return;
+
+    try {
+      const res = await fetch("/api/announcements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newAnnouncement),
+      });
+
+      if (res.ok) {
+        fetchAnnouncements();
+        setNewAnnouncement({ title: "", content: "", priority: "medium" });
+        setShowCreateModal(false);
+      }
+    } catch (error) {
+      console.error("Failed to create announcement:", error);
+    }
+  };
+
+  const deleteAnnouncement = async (id: string) => {
     if (!hasPermission) return;
-    const updated = announcements.filter((a) => a.id !== id);
-    setAnnouncements(updated);
-    saveAnnouncements(updated);
+    try {
+      const res = await fetch(`/api/announcements?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setAnnouncements(announcements.filter((a) => a.id !== id));
+      }
+    } catch (error) {
+      console.error("Failed to delete announcement:", error);
+    }
   };
 
   const getPriorityColor = (priority: string) => {
@@ -165,70 +164,72 @@ export default function Announcements() {
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/60 via-[#0a0a0f]/40 to-[#0a0a0f] pointer-events-none" />
 
         <div className="relative z-10">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white">Announcements 📢</h1>
-            <p className="text-gray-400 mt-1 text-sm sm:text-base">Manage and create announcements for HSRP staff</p>
-          </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-all text-sm font-medium w-fit"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Create Announcement
-          </button>
-        </div>
-
-        {/* Announcements List */}
-        <div className="space-y-4">
-          {announcements.length === 0 ? (
-            <div className="bg-[#1a1a2e]/50 backdrop-blur-xl rounded-2xl p-12 border border-white/5 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-500/20 flex items-center justify-center">
-                <svg className="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-                </svg>
-              </div>
-              <h3 className="text-white font-semibold text-lg mb-2">No Announcements</h3>
-              <p className="text-gray-400">Create your first announcement to get started</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-white">Announcements 📢</h1>
+              <p className="text-gray-400 mt-1 text-sm sm:text-base">Manage and create announcements for HSRP staff</p>
             </div>
-          ) : (
-            announcements.map((announcement) => (
-              <div
-                key={announcement.id}
-                className="bg-[#1a1a2e]/50 backdrop-blur-xl rounded-2xl p-6 border border-white/5"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-white font-semibold text-lg">{announcement.title}</h3>
-                    <span className={`px-2 py-1 rounded-lg text-xs border ${getPriorityColor(announcement.priority)}`}>
-                      {announcement.priority.charAt(0).toUpperCase() + announcement.priority.slice(1)} Priority
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => deleteAnnouncement(announcement.id)}
-                    className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-500/10 rounded-lg transition-colors"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-all text-sm font-medium w-fit"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Create Announcement
+            </button>
+          </div>
+
+          {/* Announcements List */}
+          <div className="space-y-4">
+            {announcements.length === 0 ? (
+              <div className="bg-[#1a1a2e]/50 backdrop-blur-xl rounded-2xl p-12 border border-white/5 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                  </svg>
                 </div>
-                <p className="text-gray-300 mb-4 whitespace-pre-wrap">{announcement.content}</p>
-                <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <span>By {announcement.author}</span>
-                  <span>•</span>
-                  <span>{new Date(announcement.createdAt).toLocaleString()}</span>
-                </div>
+                <h3 className="text-white font-semibold text-lg mb-2">No Announcements</h3>
+                <p className="text-gray-400">Create your first announcement to get started</p>
               </div>
-            ))
-          )}
+            ) : (
+              announcements.map((announcement) => (
+                <div
+                  key={announcement.id}
+                  className="bg-[#1a1a2e]/50 backdrop-blur-xl rounded-2xl p-6 border border-white/5"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-white font-semibold text-lg">{announcement.title}</h3>
+                      <span className={`px-2 py-1 rounded-lg text-xs border ${getPriorityColor(announcement.priority)}`}>
+                        {announcement.priority.charAt(0).toUpperCase() + announcement.priority.slice(1)} Priority
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => deleteAnnouncement(announcement.id)}
+                      className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-500/10 rounded-lg transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                  <p className="text-gray-300 mb-4 whitespace-pre-wrap">{announcement.content}</p>
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <span>By {announcement.author}</span>
+                    <span>•</span>
+                    <span>{new Date(announcement.createdAt).toLocaleString()}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
 
         {/* Create Modal */}
         {showCreateModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-[#1a1a2e] rounded-2xl p-6 w-full max-w-lg border border-white/10">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-[#1a1a2e] rounded-2xl p-6 w-full max-w-lg border border-white/10 shadow-2xl">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-white font-semibold text-xl">Create Announcement</h2>
                 <button

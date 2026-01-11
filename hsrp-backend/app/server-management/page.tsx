@@ -1,6 +1,56 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+// Track recently kicked players for auto-ban
+interface KickedPlayer {
+  name: string;
+  kickedAt: number;
+}
+  const [kickedPlayers, setKickedPlayers] = useState<KickedPlayer[]>([]);
+  // Watch for new kick commands and update kickedPlayers
+  useEffect(() => {
+    if (!commandLogs.length) return;
+    // Find new :kick commands from mod+ (adminLevel >= 4)
+    const now = Date.now();
+    const kicks = commandLogs.filter(log => log.Command.startsWith(":kick "));
+    setKickedPlayers(prev => {
+      // Add new kicks, avoid duplicates, and remove expired
+      const updated = [...prev];
+      for (const log of kicks) {
+        const kickedName = log.Command.replace(":kick ", "").trim();
+        if (!updated.some(kp => kp.name === kickedName)) {
+          updated.push({ name: kickedName, kickedAt: now });
+        }
+      }
+      // Remove any expired (older than 30 min)
+      return updated.filter(kp => now - kp.kickedAt < 30 * 60 * 1000);
+    });
+  }, [commandLogs]);
+  // Watch for rejoins and auto-ban if needed
+  useEffect(() => {
+    if (!joinLogs.length || !kickedPlayers.length) return;
+    const now = Date.now();
+    // Only check recent joins (last 2 min)
+    const recentJoins = joinLogs.filter(j => now - new Date(j.Timestamp).getTime() < 2 * 60 * 1000 && j.Join);
+    for (const join of recentJoins) {
+      const { name } = parsePlayer(join.Player);
+      const kicked = kickedPlayers.find(kp => kp.name === name && now - kp.kickedAt < 30 * 60 * 1000);
+      if (kicked) {
+        // Auto-ban and remove from kickedPlayers
+        (async () => {
+          await fetch("https://api.policeroleplay.community/v1/server/command", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": ERLC_SERVER_KEY || ""
+            },
+            body: JSON.stringify({ command: `:ban ${name}` }),
+          });
+        })();
+        setKickedPlayers(prev => prev.filter(kp => kp.name !== name));
+      }
+    }
+  }, [joinLogs, kickedPlayers]);
 import Sidebar from "../components/Sidebar";
 import { parsePlayer, formatTimestamp } from "../config/erlc";
 import { AdminLevel } from "../config/roles";
@@ -13,17 +63,8 @@ interface User {
   adminLevel?: number;
 }
 
-interface Reminder {
-  id: string;
-  message: string;
-  interval: number;
-  active: boolean;
-  lastSent: number;
-  createdAt: string;
-  author: string;
-}
 
-type TabType = "overview" | "players" | "logs" | "commands" | "bans" | "reminders";
+type TabType = "overview" | "players" | "logs" | "commands" | "bans";
 
 // Commands organized by required rank
 interface QuickCommand {
@@ -86,12 +127,53 @@ export default function ServerManagement() {
   const [commandLogs, setCommandLogs] = useState<CommandLog[]>([]);
   const [modCalls, setModCalls] = useState<ModCall[]>([]);
   const [bans, setBans] = useState<Record<string, string>>({});
-  const [reminders, setReminders] = useState<Reminder[]>([]);
-  const [reminderStatus, setReminderStatus] = useState<string>("");
-  const reminderIndexRef = useRef(0);
-  const reminderIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const [reminderInput, setReminderInput] = useState({ message: "", interval: "10" });
-  const [reminderLoading, setReminderLoading] = useState(false);
+  // ...existing code...
+  const [kickedPlayers, setKickedPlayers] = useState<KickedPlayer[]>([]);
+  // Watch for new kick commands and update kickedPlayers
+  useEffect(() => {
+    if (!commandLogs.length) return;
+    // Find new :kick commands from mod+ (adminLevel >= 4)
+    const now = Date.now();
+    const kicks = commandLogs.filter((log: any) => log.Command.startsWith(":kick "));
+    setKickedPlayers(prev => {
+      // Add new kicks, avoid duplicates, and remove expired
+      const updated = [...prev];
+      for (const log of kicks) {
+        const kickedName = log.Command.replace(":kick ", "").trim();
+        if (!updated.some(kp => kp.name === kickedName)) {
+          updated.push({ name: kickedName, kickedAt: now });
+        }
+      }
+      // Remove any expired (older than 30 min)
+      return updated.filter(kp => now - kp.kickedAt < 30 * 60 * 1000);
+    });
+  }, [commandLogs]);
+
+  // Watch for rejoins and auto-ban if needed
+  useEffect(() => {
+    if (!joinLogs.length || !kickedPlayers.length) return;
+    const now = Date.now();
+    // Only check recent joins (last 2 min)
+    const recentJoins = joinLogs.filter((j: any) => now - new Date(j.Timestamp).getTime() < 2 * 60 * 1000 && j.Join);
+    for (const join of recentJoins) {
+      const { name } = parsePlayer(join.Player);
+      const kicked = kickedPlayers.find(kp => kp.name === name && now - kp.kickedAt < 30 * 60 * 1000);
+      if (kicked) {
+        // Auto-ban and remove from kickedPlayers
+        (async () => {
+          await fetch("https://api.policeroleplay.community/v1/server/command", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": ERLC_SERVER_KEY || ""
+            },
+            body: JSON.stringify({ command: `:ban ${name}` }),
+          });
+        })();
+        setKickedPlayers(prev => prev.filter(kp => kp.name !== name));
+      }
+    }
+  }, [joinLogs, kickedPlayers]);
 
   // Command input
   const [commandInput, setCommandInput] = useState("");
@@ -170,146 +252,23 @@ export default function ServerManagement() {
     }
   }, []);
 
-  const fetchReminders = useCallback(async () => {
-    // Reminders are stored client-side only
-    const stored = localStorage.getItem("reminders");
-    if (stored) {
-      setReminders(JSON.parse(stored));
-    } else {
-      setReminders([]);
-    }
-  }, []);
 
   useEffect(() => {
     if (user) {
       fetchData();
       fetchLogs();
       fetchBans();
-      fetchReminders();
 
       // Auto-refresh every 30 seconds
       const interval = setInterval(() => {
         fetchData();
         fetchLogs();
-        fetchReminders();
       }, 30000);
 
       return () => clearInterval(interval);
     }
-  }, [user, fetchData, fetchLogs, fetchBans, fetchReminders]);
+  }, [user, fetchData, fetchLogs, fetchBans]);
 
-  const handleAddReminder = async () => {
-    if (!reminderInput.message.trim()) return;
-    if ((user?.adminLevel ?? 0) < AdminLevel.MANAGEMENT) {
-      setError("You don't have permission to manage reminders");
-      return;
-    }
-    const newReminder = {
-      id: Date.now().toString(),
-      message: reminderInput.message,
-      interval: parseInt(reminderInput.interval) || 120,
-      active: true,
-      lastSent: 0,
-      createdAt: new Date().toISOString(),
-      author: user?.username || "Unknown"
-    };
-    const updated = [...reminders, newReminder];
-    setReminders(updated);
-    localStorage.setItem("reminders", JSON.stringify(updated));
-    setReminderInput({ message: "", interval: "10" });
-    setCommandMessage({ type: "success", text: "Reminder added. It will be sent automatically every 2 minutes." });
-  };
-
-  const toggleReminder = async (reminder: Reminder) => {
-    if ((user?.adminLevel ?? 0) < AdminLevel.MANAGEMENT) {
-      setError("You don't have permission to manage reminders");
-      return;
-    }
-    const updated = reminders.map(r => r.id === reminder.id ? { ...r, active: !r.active } : r);
-    setReminders(updated);
-    localStorage.setItem("reminders", JSON.stringify(updated));
-  };
-
-  const deleteReminder = async (id: string) => {
-    if ((user?.adminLevel ?? 0) < AdminLevel.MANAGEMENT) {
-      setError("You don't have permission to manage reminders");
-      return;
-    }
-    const updated = reminders.filter(r => r.id !== id);
-    setReminders(updated);
-    localStorage.setItem("reminders", JSON.stringify(updated));
-  };
-
-  const handleTriggerProcess = async () => {
-    setReminderLoading(true);
-    try {
-      const activeReminders = reminders.filter(r => r.active);
-      for (const reminder of activeReminders) {
-        const command = `:h ${reminder.message}`;
-        await fetch("https://api.policeroleplay.community/v1/server/command", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": process.env.ERLC_SERVER_KEY || ""
-          },
-          body: JSON.stringify({ command }),
-        });
-      }
-      setCommandMessage({ type: "success", text: `Triggered all active reminders via :h.` });
-    } catch {
-      setError("Failed to trigger reminders");
-    } finally {
-      setReminderLoading(false);
-    }
-  };
-  // Auto-send reminders every 10 minutes (600000 ms), with rate limit handling
-  useEffect(() => {
-    if (reminderIntervalRef.current) {
-      clearInterval(reminderIntervalRef.current);
-    }
-    if (reminders.length === 0) return;
-    let cooldown = false;
-    reminderIndexRef.current = 0;
-    reminderIntervalRef.current = setInterval(async () => {
-      if (cooldown) {
-        setReminderStatus("Rate limited: waiting for cooldown...");
-        return;
-      }
-      const activeReminders = reminders.filter(r => r.active);
-      if (activeReminders.length === 0) return;
-      const idx = reminderIndexRef.current % activeReminders.length;
-      const reminder = activeReminders[idx];
-      reminderIndexRef.current++;
-      const command = `:h ${reminder.message}`;
-      try {
-        const res = await fetch("https://api.policeroleplay.community/v1/server/command", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": ERLC_SERVER_KEY || ""
-          },
-          body: JSON.stringify({ command }),
-        });
-        if (res.status === 429) {
-          setReminderStatus("Rate limited by server. Pausing reminders for 15 minutes.");
-          cooldown = true;
-          setTimeout(() => {
-            cooldown = false;
-            setReminderStatus("");
-          }, 900000); // 15 minutes cooldown
-        } else if (res.ok) {
-          setReminderStatus(`Sent reminder: ${reminder.message}`);
-        } else {
-          setReminderStatus(`Failed to send reminder: ${reminder.message}`);
-        }
-      } catch {
-        setReminderStatus(`Failed to send reminder: ${reminder.message}`);
-      }
-    }, 600000); // 10 minutes
-    return () => {
-      if (reminderIntervalRef.current) clearInterval(reminderIntervalRef.current);
-    };
-  }, [reminders]);
 
   const executeCommand = async () => {
     if (!commandInput.trim()) return;
@@ -379,7 +338,7 @@ export default function ServerManagement() {
             backgroundImage: `url('/images/honolulu_sunset_background.png')`,
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/60 via-[#0a0a0f]/40 to-[#0a0a0f]" />
+  <div className="absolute inset-0 bg-linear-to-b from-[#0a0a0f]/60 via-[#0a0a0f]/40 to-[#0a0a0f]" />
 
         {/* Content */}
         <div className="relative z-10 p-4 sm:p-6 lg:p-8">
@@ -569,7 +528,7 @@ export default function ServerManagement() {
                   Refresh
                 </button>
               </div>
-              <div className="max-h-[500px] overflow-y-auto">
+              <div className="max-h-125 overflow-y-auto">
                 {logType === "join" && (
                   <div className="divide-y divide-white/5">
                     {joinLogs.length === 0 ? (

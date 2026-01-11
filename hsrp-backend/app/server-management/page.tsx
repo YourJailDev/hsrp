@@ -262,14 +262,19 @@ export default function ServerManagement() {
       setReminderLoading(false);
     }
   };
-  // Auto-send reminders every 2 minutes (120000 ms)
+  // Auto-send reminders every 10 minutes (600000 ms), with rate limit handling
   useEffect(() => {
     if (reminderIntervalRef.current) {
       clearInterval(reminderIntervalRef.current);
     }
     if (reminders.length === 0) return;
+    let cooldown = false;
     reminderIndexRef.current = 0;
     reminderIntervalRef.current = setInterval(async () => {
+      if (cooldown) {
+        setReminderStatus("Rate limited: waiting for cooldown...");
+        return;
+      }
       const activeReminders = reminders.filter(r => r.active);
       if (activeReminders.length === 0) return;
       const idx = reminderIndexRef.current % activeReminders.length;
@@ -277,7 +282,7 @@ export default function ServerManagement() {
       reminderIndexRef.current++;
       const command = `:h ${reminder.message}`;
       try {
-        await fetch("https://api.policeroleplay.community/v1/server/command", {
+        const res = await fetch("https://api.policeroleplay.community/v1/server/command", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -285,11 +290,22 @@ export default function ServerManagement() {
           },
           body: JSON.stringify({ command }),
         });
-        setReminderStatus(`Sent reminder: ${reminder.message}`);
+        if (res.status === 429) {
+          setReminderStatus("Rate limited by server. Pausing reminders for 15 minutes.");
+          cooldown = true;
+          setTimeout(() => {
+            cooldown = false;
+            setReminderStatus("");
+          }, 900000); // 15 minutes cooldown
+        } else if (res.ok) {
+          setReminderStatus(`Sent reminder: ${reminder.message}`);
+        } else {
+          setReminderStatus(`Failed to send reminder: ${reminder.message}`);
+        }
       } catch {
         setReminderStatus(`Failed to send reminder: ${reminder.message}`);
       }
-    }, 120000);
+    }, 600000); // 10 minutes
     return () => {
       if (reminderIntervalRef.current) clearInterval(reminderIntervalRef.current);
     };

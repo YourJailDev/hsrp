@@ -26,9 +26,9 @@ export const ROLE_PERMISSIONS: Record<string, AdminLevel> = {
 // Shift specific Role IDs
 export const SHIFT_ROLES = {
   MODERATING: "1442014281833910443", // Default to Moderator role for now if unknown
-  HR_SUPERVISOR: "1442015630093062154", // Default to Internal Affairs for now
-  FIFTY_FIFTY: "1442014929799352382", // Default to Administrator for now
-  ON_SHIFT: "ON_SHIFT_ROLE_ID", // TODO: Replace with actual "On Shift" Role ID
+  HR_SUPERVISOR: "1442228753278308353", // Default to Internal Affairs for now
+  FIFTY_FIFTY: "1442012376034447430", // Default to Administrator for now
+  ON_SHIFT: "1442017464807325776", // TODO: Replace with actual "On Shift" Role ID
 };
 
 // Define which pages require which admin level

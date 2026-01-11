@@ -1,56 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+
 // Track recently kicked players for auto-ban
 interface KickedPlayer {
   name: string;
   kickedAt: number;
 }
-  const [kickedPlayers, setKickedPlayers] = useState<KickedPlayer[]>([]);
-  // Watch for new kick commands and update kickedPlayers
-  useEffect(() => {
-    if (!commandLogs.length) return;
-    // Find new :kick commands from mod+ (adminLevel >= 4)
-    const now = Date.now();
-    const kicks = commandLogs.filter(log => log.Command.startsWith(":kick "));
-    setKickedPlayers(prev => {
-      // Add new kicks, avoid duplicates, and remove expired
-      const updated = [...prev];
-      for (const log of kicks) {
-        const kickedName = log.Command.replace(":kick ", "").trim();
-        if (!updated.some(kp => kp.name === kickedName)) {
-          updated.push({ name: kickedName, kickedAt: now });
-        }
-      }
-      // Remove any expired (older than 30 min)
-      return updated.filter(kp => now - kp.kickedAt < 30 * 60 * 1000);
-    });
-  }, [commandLogs]);
-  // Watch for rejoins and auto-ban if needed
-  useEffect(() => {
-    if (!joinLogs.length || !kickedPlayers.length) return;
-    const now = Date.now();
-    // Only check recent joins (last 2 min)
-    const recentJoins = joinLogs.filter(j => now - new Date(j.Timestamp).getTime() < 2 * 60 * 1000 && j.Join);
-    for (const join of recentJoins) {
-      const { name } = parsePlayer(join.Player);
-      const kicked = kickedPlayers.find(kp => kp.name === name && now - kp.kickedAt < 30 * 60 * 1000);
-      if (kicked) {
-        // Auto-ban and remove from kickedPlayers
-        (async () => {
-          await fetch("https://api.policeroleplay.community/v1/server/command", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": ERLC_SERVER_KEY || ""
-            },
-            body: JSON.stringify({ command: `:ban ${name}` }),
-          });
-        })();
-        setKickedPlayers(prev => prev.filter(kp => kp.name !== name));
-      }
-    }
-  }, [joinLogs, kickedPlayers]);
+// ...existing code...
 import Sidebar from "../components/Sidebar";
 import { parsePlayer, formatTimestamp } from "../config/erlc";
 import { AdminLevel } from "../config/roles";

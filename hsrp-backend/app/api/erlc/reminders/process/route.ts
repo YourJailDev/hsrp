@@ -33,7 +33,9 @@ export async function POST(req: NextRequest) {
 
             if (timeSinceLastSent >= intervalMs) {
                 // Time to send!
-                const command = `:m ${reminder.message}`;
+                // Use :h (hint) instead of :m (message) as requested
+                // If message starts with : (e.g. :m or :h), use it as is
+                const command = reminder.message.startsWith(":") ? reminder.message : `:h ${reminder.message}`;
 
                 try {
                     const response = await fetch(`${ERLC_API_BASE_URL}/server/command`, {

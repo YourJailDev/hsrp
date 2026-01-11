@@ -707,7 +707,7 @@ export default function ServerManagement() {
                       type="text"
                       value={reminderInput.message}
                       onChange={(e) => setReminderInput({ ...reminderInput, message: e.target.value })}
-                      placeholder=":m Please join our Discord server!"
+                      placeholder=":h Please join our Discord server!"
                       className="w-full bg-[#0a0a0f]/50 text-white px-4 py-2.5 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                     />
                   </div>
@@ -813,7 +813,7 @@ export default function ServerManagement() {
                   <div>
                     <h3 className="text-blue-400 font-semibold">How it works</h3>
                     <p className="text-gray-400 text-sm mt-1 leading-relaxed">
-                      Reminders are sent to the in-game server using the <code className="text-blue-300 font-mono">:m</code> command.
+                      Reminders are sent to the in-game server using the <code className="text-blue-300 font-mono">:h</code> command.
                       The interval determines how many minutes to wait between each message.
                       Messages will only be sent if the reminder is marked as <span className="text-green-400">Active</span>.
                     </p>

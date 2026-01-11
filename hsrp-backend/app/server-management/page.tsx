@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Sidebar from "../components/Sidebar";
 import { parsePlayer, formatTimestamp } from "../config/erlc";
 import { AdminLevel } from "../config/roles";
@@ -86,6 +86,9 @@ export default function ServerManagement() {
   const [modCalls, setModCalls] = useState<ModCall[]>([]);
   const [bans, setBans] = useState<Record<string, string>>({});
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [reminderStatus, setReminderStatus] = useState<string>("");
+  const reminderIndexRef = useRef(0);
+  const reminderIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [reminderInput, setReminderInput] = useState({ message: "", interval: "10" });
   const [reminderLoading, setReminderLoading] = useState(false);
 
@@ -167,13 +170,12 @@ export default function ServerManagement() {
   }, []);
 
   const fetchReminders = useCallback(async () => {
-    try {
-      const res = await fetch("/api/erlc/reminders");
-      if (res.ok) {
-        setReminders(await res.json());
-      }
-    } catch (err) {
-      console.error("Failed to fetch reminders:", err);
+    // Reminders are stored client-side only
+    const stored = localStorage.getItem("reminders");
+    if (stored) {
+      setReminders(JSON.parse(stored));
+    } else {
+      setReminders([]);
     }
   }, []);
 
@@ -201,26 +203,20 @@ export default function ServerManagement() {
       setError("You don't have permission to manage reminders");
       return;
     }
-
-    setReminderLoading(true);
-    try {
-      const res = await fetch("/api/erlc/reminders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(reminderInput),
-      });
-      if (res.ok) {
-        setReminderInput({ message: "", interval: "10" });
-        fetchReminders();
-      } else {
-        const data = await res.json();
-        setError(data.error || "Failed to add reminder");
-      }
-    } catch {
-      setError("Failed to add reminder");
-    } finally {
-      setReminderLoading(false);
-    }
+    const newReminder = {
+      id: Date.now().toString(),
+      message: reminderInput.message,
+      interval: parseInt(reminderInput.interval) || 120,
+      active: true,
+      lastSent: 0,
+      createdAt: new Date().toISOString(),
+      author: user?.username || "Unknown"
+    };
+    const updated = [...reminders, newReminder];
+    setReminders(updated);
+    localStorage.setItem("reminders", JSON.stringify(updated));
+    setReminderInput({ message: "", interval: "10" });
+    setCommandMessage({ type: "success", text: "Reminder added. It will be sent automatically every 2 minutes." });
   };
 
   const toggleReminder = async (reminder: Reminder) => {
@@ -228,17 +224,9 @@ export default function ServerManagement() {
       setError("You don't have permission to manage reminders");
       return;
     }
-
-    try {
-      await fetch("/api/erlc/reminders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...reminder, active: !reminder.active }),
-      });
-      fetchReminders();
-    } catch (err) {
-      console.error(err);
-    }
+    const updated = reminders.map(r => r.id === reminder.id ? { ...r, active: !r.active } : r);
+    setReminders(updated);
+    localStorage.setItem("reminders", JSON.stringify(updated));
   };
 
   const deleteReminder = async (id: string) => {
@@ -246,33 +234,59 @@ export default function ServerManagement() {
       setError("You don't have permission to manage reminders");
       return;
     }
-
-    if (!confirm("Are you sure you want to delete this reminder?")) return;
-    try {
-      await fetch(`/api/erlc/reminders?id=${id}`, { method: "DELETE" });
-      fetchReminders();
-    } catch (err) {
-      console.error(err);
-    }
+    const updated = reminders.filter(r => r.id !== id);
+    setReminders(updated);
+    localStorage.setItem("reminders", JSON.stringify(updated));
   };
 
   const handleTriggerProcess = async () => {
     setReminderLoading(true);
     try {
-      const res = await fetch("/api/erlc/reminders/process", { method: "POST" });
-      const data = await res.json();
-      if (res.ok) {
-        setCommandMessage({ type: "success", text: `Process triggered: ${data.sentCount} reminders sent.` });
-        fetchReminders();
-      } else {
-        setError(data.error || "Failed to trigger process");
+      const activeReminders = reminders.filter(r => r.active);
+      for (const reminder of activeReminders) {
+        const command = `:h ${reminder.message}`;
+        await fetch("https://api.policeroleplay.community/v1/server/command", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ command }),
+        });
       }
+      setCommandMessage({ type: "success", text: `Triggered all active reminders via :h.` });
     } catch {
-      setError("Failed to trigger process");
+      setError("Failed to trigger reminders");
     } finally {
       setReminderLoading(false);
     }
   };
+  // Auto-send reminders every 2 minutes (120000 ms)
+  useEffect(() => {
+    if (reminderIntervalRef.current) {
+      clearInterval(reminderIntervalRef.current);
+    }
+    if (reminders.length === 0) return;
+    reminderIndexRef.current = 0;
+    reminderIntervalRef.current = setInterval(async () => {
+      const activeReminders = reminders.filter(r => r.active);
+      if (activeReminders.length === 0) return;
+      const idx = reminderIndexRef.current % activeReminders.length;
+      const reminder = activeReminders[idx];
+      reminderIndexRef.current++;
+      const command = `:h ${reminder.message}`;
+      try {
+        await fetch("https://api.policeroleplay.community/v1/server/command", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ command }),
+        });
+        setReminderStatus(`Sent reminder: ${reminder.message}`);
+      } catch {
+        setReminderStatus(`Failed to send reminder: ${reminder.message}`);
+      }
+    }, 120000);
+    return () => {
+      if (reminderIntervalRef.current) clearInterval(reminderIntervalRef.current);
+    };
+  }, [reminders]);
 
   const executeCommand = async () => {
     if (!commandInput.trim()) return;
@@ -753,6 +767,11 @@ export default function ServerManagement() {
               </div>
 
               {/* Reminders List */}
+              {reminderStatus && (
+                <div className="mb-4 px-4 py-2 rounded-xl bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                  {reminderStatus}
+                </div>
+              )}
               <div className="bg-[#1a1a2e]/80 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/5 shadow-xl">
                 <div className="p-4 border-b border-white/10 flex justify-between items-center">
                   <h2 className="text-white font-semibold">Scheduled Reminders</h2>
